@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { X, Sprout,Tractor,Users  } from 'lucide-react';
 import userContext from '../utils/UserContext';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
     const [isOpenModal, setIsOpenModal] = useState(false);
@@ -11,12 +11,18 @@ const Navbar = () => {
     const [ role,setRole ] = useState(null)
     const [ error,setError ] = useState(null)
 
+    const navigate = useNavigate()
+
     const navItems = [
         { name: 'Home', to:'/'},
         { name: 'About', to:'/about'}
     ];
 
     const handleModal = () =>{
+        if(!isOpenModal){
+            setRole(null)
+            setError(null)
+        }
         setIsOpenModal(!isOpenModal)
     }
 
@@ -29,6 +35,16 @@ const Navbar = () => {
             setError('Select your role')
             return;
         } 
+
+        if(role === 'farmer'){
+            navigate('/farmerSignIn')
+        }else{
+            navigate('/buyerSignIn')
+        }
+
+        setIsOpenModal(false)
+        setRole(null)
+        setError(null)
     }
 
     if(isOpenModal){
