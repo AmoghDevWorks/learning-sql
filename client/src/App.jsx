@@ -5,12 +5,14 @@ import Home from './components/Home'
 import UserContext from './utils/UserContext'
 import FarmerProducts from './buyer/FarmerProducts'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 const Structure = () =>{
   return (
     <div>
       <Navbar />
       <Outlet />
+      <Footer />
     </div>
   )
 }
