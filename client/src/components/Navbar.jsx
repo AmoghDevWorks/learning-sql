@@ -9,6 +9,7 @@ const Navbar = () => {
     const { user,setUser } = useContext(userContext)
 
     const [ role,setRole ] = useState(null)
+    const [ error,setError ] = useState(null)
 
     const navItems = [
         { name: 'Home', to:'/'},
@@ -24,7 +25,10 @@ const Navbar = () => {
     }
 
     const handleClick = () =>{
-
+        if(!role){
+            setError('Select your role')
+            return;
+        } 
     }
 
     if(isOpenModal){
@@ -60,6 +64,8 @@ const Navbar = () => {
                         </div>
                     </div>
 
+                    {error && <div className='text-md text-center font-semibold text-red-700'>{error}</div>}
+
                     {/* Modal footer */}
                     <div className='flex items-center justify-center py-4'>
                         <button
@@ -87,7 +93,7 @@ const Navbar = () => {
                 <Link
                     key={item.name}
                     to={item.to}
-                    className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-sm font-medium text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
+                    className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-md font-semibold text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
                 >
                     {item.name}
                 </Link>

@@ -6,6 +6,10 @@ import UserContext from './utils/UserContext'
 import FarmerProducts from './buyer/FarmerProducts'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import FarmerSignIn from './farmer/FarmerSignIn'
+import FarmerSignUp from './farmer/FarmerSignUp'
+import BuyerSignUp from './buyer/BuyerSignUp'
+import BuyerSignIn from './buyer/BuyerSignIn'
 
 const Structure = () =>{
   return (
@@ -33,6 +37,22 @@ const appRouter = createBrowserRouter([
       {
         path:'/farmerProducts',
         element:<FarmerProducts />
+      },
+      {
+        path:'/farmerSignIn',
+        element:<FarmerSignIn />
+      },
+      {
+        path:'/farmerSignUp',
+        element:<FarmerSignUp />
+      },
+      {
+        path:'/buyerSignUp',
+        element:<BuyerSignUp />
+      },
+      {
+        path:'/buyerSignIn',
+        element:<BuyerSignIn />
       }
     ]
   }
