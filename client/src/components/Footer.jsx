@@ -5,7 +5,7 @@ const Footer = () => {
   const year = new Date().getFullYear();
 
   return (
-    <div className="bg-green-700 flex items-center justify-center p-4">
+    <div className="bg-green-600 flex items-center justify-center p-4 border-t-2 border-green-800">
       <p className="text-xl font-semibold text-white">
         FarmTracker
       </p>
