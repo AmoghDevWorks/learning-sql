@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import About from './components/About'
 import Home from './components/Home'
+import userContext from './utils/UserContext'
 
 const Structure = () =>{
   return (
@@ -29,10 +30,13 @@ const appRouter = createBrowserRouter([
 ])
 
 const App = () => {
+
+  const [ user,setUser ] = useState(null)
+
   return (
-    <RouterProvider router={appRouter}>
-      <Structure />
-    </RouterProvider>
+    <userContext.Provider value={{ user, setUser }}>
+      <RouterProvider router={appRouter} />
+    </userContext.Provider>
   )
 }
 
