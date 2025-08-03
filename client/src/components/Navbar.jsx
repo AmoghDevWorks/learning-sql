@@ -1,20 +1,77 @@
 import React, { useContext, useState } from 'react'
-import { X, Sprout } from 'lucide-react';
+import { X, Sprout,Tractor,Users  } from 'lucide-react';
 import userContext from '../utils/UserContext';
 import { Link } from 'react-router-dom'
 
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpenModal, setIsOpenModal] = useState(false);
 
     const { user,setUser } = useContext(userContext)
+
+    const [ role,setRole ] = useState(null)
 
     const navItems = [
         { name: 'Home', to:'/'},
         { name: 'About', to:'/about'}
     ];
 
+    const handleModal = () =>{
+        setIsOpenModal(!isOpenModal)
+    }
+
     const handleLogout = () =>{
         setUser(null)
+    }
+
+    const handleClick = () =>{
+
+    }
+
+    if(isOpenModal){
+        return(
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm z-50">
+                <div className="bg-white rounded-lg shadow-lg w-fit max-w-full">
+                    {/* Modal Header */}
+                    <div className="flex items-center justify-between p-4 border-b">
+                        <h2 className="text-lg font-semibold text-gray-800">Choose Your Role</h2>
+                        <button onClick={handleModal}>
+                            <X className="h-5 w-5 text-gray-600 hover:text-black" />
+                        </button>
+                    </div>
+
+                    {/* Modal Body (optional) */}
+                    <div className="p-4">
+                        {/* Role selection buttons or UI goes here */}
+                        <div className='flex items-center gap-10'>
+                            <div
+                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${role === 'farmer' ? 'border-2 border-green-700' : ''}`}
+                                onClick ={()=>setRole('farmer')}
+                            >
+                                <Tractor className='h-20 w-20 text-green-700' />
+                                <p className='text-2xl font-semibold'>Farmer</p>
+                            </div>
+                            <div 
+                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${role === 'consumer' ? 'border-2 border-green-700' : ''}`}
+                                onClick={()=>setRole('consumer')}
+                            >
+                                <Users className='h-20 w-20 text-green-700' />
+                                <p className='text-2xl font-semibold'>Consumer</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal footer */}
+                    <div className='flex items-center justify-center py-4'>
+                        <button
+                            className='text-xl px-4 py-2 bg-green-700 rounded-lg text-slate-50'
+                            onClick={handleClick}
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -37,19 +94,22 @@ const Navbar = () => {
                 ))}
             </div>
             <div>
-                { !user && 
-                    <div className='px-3 py-2 bg-white text-green-600 rounded-2xl text-md font-semibold hover:cursor-pointer'>
-                        <Link to={'/auth'}>Login</Link>
-                    </div>
-                }
-                {
-                    user && 
-                    <div 
-                        className='px-3 py-2 bg-white text-green-600 rounded-2xl text-md font-semibold hover:cursor-pointer'
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </div>  
+                { 
+                    !user ? (
+                        <div 
+                            className='px-3 py-2 bg-white text-green-600 rounded-2xl text-md font-semibold hover:cursor-pointer' 
+                            onClick={handleModal}
+                        >
+                            Login
+                        </div>
+                    ):(
+                        <div 
+                            className='px-3 py-2 bg-white text-green-600 rounded-2xl text-md font-semibold hover:cursor-pointer'
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </div>  
+                    )
                 }
             </div>
         </nav>

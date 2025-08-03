@@ -6,7 +6,6 @@ import UserContext from './utils/UserContext'
 import FarmerProducts from './buyer/FarmerProducts'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import Auth from './auth/Auth'
 
 const Structure = () =>{
   return (
@@ -34,10 +33,6 @@ const appRouter = createBrowserRouter([
       {
         path:'/farmerProducts',
         element:<FarmerProducts />
-      },
-      {
-        path:'/auth',
-        element:<Auth />
       }
     ]
   }
