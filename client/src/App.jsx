@@ -2,11 +2,14 @@ import React, { useState } from 'react'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import About from './components/About'
 import Home from './components/Home'
-import userContext from './utils/UserContext'
+import UserContext from './utils/UserContext'
+import FarmerProducts from './buyer/FarmerProducts'
+import Navbar from './components/Navbar'
 
 const Structure = () =>{
   return (
     <div>
+      <Navbar />
       <Outlet />
     </div>
   )
@@ -24,6 +27,10 @@ const appRouter = createBrowserRouter([
       {
         path:'/about',
         element:<About />
+      },
+      {
+        path:'/farmerProducts',
+        element:<FarmerProducts />
       }
     ]
   }
@@ -34,9 +41,9 @@ const App = () => {
   const [ user,setUser ] = useState(null)
 
   return (
-    <userContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser }}>
       <RouterProvider router={appRouter} />
-    </userContext.Provider>
+    </UserContext.Provider>
   )
 }
 
