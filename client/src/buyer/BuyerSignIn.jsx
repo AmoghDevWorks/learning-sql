@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { Mail, Lock, Eye, EyeOff, ShoppingCart, User } from 'lucide-react';
-import { Link } from 'react-router-dom'
-
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import userContext from '../utils/UserContext'
 const BuyerSignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -9,6 +10,9 @@ const BuyerSignIn = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const { user,setUser } = useContext(userContext)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,8 +51,17 @@ const BuyerSignIn = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Buyer form submitted:', formData);
-      // Handle buyer sign in logic here
+      axios.post('http://localhost:8000/consumer/signIn',formData)
+      .then(result=>{
+        setUser(result.data.userId)
+        alert('SignIn successfull')
+        setTimeout(() => {
+          navigate('/')
+        }, 2000);
+      })
+      .catch(err=>{
+        setErrors(err.message)
+      })
     }
   };
 

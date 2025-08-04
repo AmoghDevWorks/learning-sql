@@ -17,4 +17,21 @@ const signUp = (req,res,next) => {
     })
 }
 
-module.exports = { signUp }
+const signIn = (req,res,next) =>{
+    const { email,password } = req.body;
+
+    if( !email || !password ) return res.status(404).json({message:"Fill all the fields"})
+
+    pool.query('SELECT * FROM consumer WHERE email = ?',[email],(err,results)=>{
+        if(err) return res.status(500).json({message:"Internal Server Error"})
+        if(results.length === 0) return res.status(404).json({message:"Invalid Email, User Not found"})
+
+        const user = results[0]
+
+        if(user.password !== password) return res.status(404).json({message:"Invalid credentials"})
+
+        return res.status(200).json({message:"SignIn Successfull",userId:user.id})
+    })
+}
+
+module.exports = { signUp, signIn }
