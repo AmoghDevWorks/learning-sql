@@ -3,6 +3,7 @@ import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import About from './components/About'
 import Home from './components/Home'
 import UserContext from './utils/UserContext'
+import RoleContext from './utils/RoleContext'
 import FarmerProducts from './buyer/FarmerProducts'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -61,11 +62,14 @@ const appRouter = createBrowserRouter([
 const App = () => {
 
   const [ user,setUser ] = useState(null)
+  const [ role,setRole ] = useState(null)
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
-      <RouterProvider router={appRouter} />
-    </UserContext.Provider>
+    <RoleContext.Provider value={{ role,setRole }}>
+      <UserContext.Provider value={{ user, setUser }}>
+        <RouterProvider router={appRouter} />
+      </UserContext.Provider>
+    </RoleContext.Provider>
   )
 }
 
