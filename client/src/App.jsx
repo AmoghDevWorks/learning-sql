@@ -11,6 +11,7 @@ import FarmerSignIn from './farmer/FarmerSignIn'
 import FarmerSignUp from './farmer/FarmerSignUp'
 import BuyerSignUp from './buyer/BuyerSignUp'
 import BuyerSignIn from './buyer/BuyerSignIn'
+import ContactUs from './components/ContactUs'
 
 const Structure = () =>{
   return (
@@ -54,6 +55,10 @@ const appRouter = createBrowserRouter([
       {
         path:'/buyerSignIn',
         element:<BuyerSignIn />
+      },
+      {
+        path:'/contactUs',
+        element:<ContactUs />
       }
     ]
   }

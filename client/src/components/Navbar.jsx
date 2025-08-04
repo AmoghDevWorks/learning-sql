@@ -17,7 +17,8 @@ const Navbar = () => {
 
     const navItems = [
         { name: 'Home', to:'/'},
-        { name: 'About', to:'/about'}
+        { name: 'About', to:'/about'},
+        { name: 'Contact',to:'/contactUs'}
     ];
 
     const handleModal = () =>{
