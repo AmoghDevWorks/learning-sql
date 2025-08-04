@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, ShoppingCart, UserPlus } from 'lucide-react';
+import axios from 'axios'
+import userContext from '../utils/UserContext'
+import { useNavigate } from 'react-router-dom';
 
 const BuyerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +15,10 @@ const BuyerSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const navigate = useNavigate()
+
+  const { user,setUser } = useContext(userContext)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,8 +74,17 @@ const BuyerSignUp = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Buyer signup form submitted:', formData);
-      // Handle buyer sign up logic here
+      axios.post('http://localhost:8000/consumer/signUp',formData)
+      .then(results => {
+        alert('SignUp successfully')
+        setUser(results.data.userId)
+        setTimeout(() => {
+          navigate('/')
+        }, (3000));
+      })
+      .catch(err =>{
+        setErrors(err.message)
+      })
     }
   };
 

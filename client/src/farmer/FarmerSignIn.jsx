@@ -55,7 +55,6 @@ const FarmerSignIn = () => {
     if (validateForm()) {
       axios.post('http://localhost:8000/farmer/signIn',formData)
       .then(result => {
-        console.log(result.data.userId)
         setUser(result.data.userId)
         alert('successfully signIn')
         setTimeout(()=>{

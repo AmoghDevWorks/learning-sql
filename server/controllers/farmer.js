@@ -8,7 +8,6 @@ const signUp = (req,res,next) =>{
 
     pool.query('INSERT INTO farmer (name,email,password,contact) VALUES (?,?,?,?)',[name,email,password,contactInfo],(err,results)=>{
         if(err){
-            console.error('Insert error:', err);
             if(err.code === 'ER_DUP_ENTRY') return res.status(404).json({message:"Account with email already exists",detail:err})
             return res.status(500).json({message:"internal Server Error",detail:err})
         }
