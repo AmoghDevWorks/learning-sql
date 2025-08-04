@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, Sprout, UserPlus } from 'lucide-react';
+import axios from 'axios'
+import userContext from '../utils/UserContext'
+import { useNavigate } from 'react-router-dom';
 
 const FarmerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +15,8 @@ const FarmerSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const { user,setUser } = useContext(userContext)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,8 +73,16 @@ const FarmerSignUp = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Farmer signup form submitted:', formData);
-      // Handle farmer sign up logic here
+      axios.post('http://localhost:8000/farmer/signUp',formData)
+      .then(result=>{
+        setUser({
+          userId:result.userId
+        })
+        alert('successfully signIn')
+        setTimeout(()=>{
+          navigate('/')
+        },2000)
+      })
     }
   };
 
