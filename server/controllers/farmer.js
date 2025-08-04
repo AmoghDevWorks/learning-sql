@@ -17,4 +17,16 @@ const signUp = (req,res,next) =>{
     })
 }
 
-module.exports = { signUp }
+const signIn = (req,res,next) =>{
+    const { email, password } = req.body
+
+    pool.query('SELECT * FROM farmer WHERE email = ?',[email],(err,results)=>{
+        if(err) return res.status(500).json({message:"Internal Server Error"})
+        if(results.length === 0) return res.status(404).json({message:"Invalid Email Id"})
+        if(results[0].password !== password) return res.status(404).json({message:"Invalid credentials"})
+
+        return res.status(200).json({message:"SignIn successfully",userId:results[0].id})
+    })
+}
+
+module.exports = { signUp, signIn }

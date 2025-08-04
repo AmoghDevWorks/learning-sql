@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Sprout, User } from 'lucide-react';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios';
+import { useContext } from 'react';
+import userContext from '../utils/UserContext';
 
 const FarmerSignIn = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +12,9 @@ const FarmerSignIn = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const { user,setUser } = useContext(userContext)
+
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,8 +53,19 @@ const FarmerSignIn = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // Handle sign in logic here
+      axios.post('http://localhost:8000/farmer/signIn',formData)
+      .then(result => {
+        console.log(result.data.userId)
+        setUser(result.data.userId)
+        alert('successfully signIn')
+        setTimeout(()=>{
+          navigate('/')
+        },2000)
+      })
+      .catch(err => {
+        alert('failed to signIn')
+        setErrors(err.message)
+      })
     }
   };
 

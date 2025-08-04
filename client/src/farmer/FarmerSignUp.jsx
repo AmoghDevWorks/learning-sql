@@ -75,13 +75,15 @@ const FarmerSignUp = () => {
     if (validateForm()) {
       axios.post('http://localhost:8000/farmer/signUp',formData)
       .then(result=>{
-        setUser({
-          userId:result.userId
-        })
+        setUser(result.data.userId)
         alert('successfully signIn')
         setTimeout(()=>{
           navigate('/')
         },2000)
+      })
+      .catch(err => {
+        alert('failed to signUp'),
+        setErrors(err.message)
       })
     }
   };
