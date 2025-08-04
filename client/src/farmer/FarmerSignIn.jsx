@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 import { useContext } from 'react';
 import userContext from '../utils/UserContext';
+import roleContext from '../utils/RoleContext';
 
 const FarmerSignIn = () => {
   const [formData, setFormData] = useState({
@@ -12,8 +13,9 @@ const FarmerSignIn = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const { user,setUser } = useContext(userContext)
 
+  const { user,setUser } = useContext(userContext)
+  const { role,setRole } = useContext(roleContext)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -56,6 +58,7 @@ const FarmerSignIn = () => {
       axios.post('http://localhost:8000/farmer/signIn',formData)
       .then(result => {
         setUser(result.data.userId)
+        setRole('farmer')
         alert('successfully signIn')
         setTimeout(()=>{
           navigate('/')

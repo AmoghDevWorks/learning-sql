@@ -3,6 +3,7 @@ import { Mail, Lock, Eye, EyeOff, ShoppingCart, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import userContext from '../utils/UserContext'
+import roleContext from '../utils/RoleContext';
 const BuyerSignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -12,6 +13,7 @@ const BuyerSignIn = () => {
   const [errors, setErrors] = useState({});
 
   const { user,setUser } = useContext(userContext)
+  const { role,setRole } = useContext(roleContext)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -54,6 +56,7 @@ const BuyerSignIn = () => {
       axios.post('http://localhost:8000/consumer/signIn',formData)
       .then(result=>{
         setUser(result.data.userId)
+        setRole('consumer')
         alert('SignIn successfull')
         setTimeout(() => {
           navigate('/')

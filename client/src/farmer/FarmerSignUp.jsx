@@ -3,6 +3,7 @@ import { User, Mail, Lock, Eye, EyeOff, Phone, Sprout, UserPlus } from 'lucide-r
 import axios from 'axios'
 import userContext from '../utils/UserContext'
 import { useNavigate } from 'react-router-dom';
+import roleContext from '../utils/RoleContext';
 
 const FarmerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +16,9 @@ const FarmerSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
   const { user,setUser } = useContext(userContext)
+  const { role,setRole } = useContext(roleContext)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -76,6 +79,7 @@ const FarmerSignUp = () => {
       axios.post('http://localhost:8000/farmer/signUp',formData)
       .then(result=>{
         setUser(result.data.userId)
+        setRole('farmer')
         alert('successfully signIn')
         setTimeout(()=>{
           navigate('/')

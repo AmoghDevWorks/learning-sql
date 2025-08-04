@@ -3,6 +3,7 @@ import { User, Mail, Lock, Eye, EyeOff, Phone, ShoppingCart, UserPlus } from 'lu
 import axios from 'axios'
 import userContext from '../utils/UserContext'
 import { useNavigate } from 'react-router-dom';
+import roleContext from '../utils/RoleContext';
 
 const BuyerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const BuyerSignUp = () => {
   const navigate = useNavigate()
 
   const { user,setUser } = useContext(userContext)
+  const { role,setRole } = useContext(roleContext)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +80,7 @@ const BuyerSignUp = () => {
       .then(results => {
         alert('SignUp successfully')
         setUser(results.data.userId)
+        setRole('consumer')
         setTimeout(() => {
           navigate('/')
         }, (3000));

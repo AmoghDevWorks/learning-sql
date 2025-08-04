@@ -2,13 +2,15 @@ import React, { useContext, useState } from 'react'
 import { X, Sprout,Tractor,Users  } from 'lucide-react';
 import userContext from '../utils/UserContext';
 import { Link, useNavigate } from 'react-router-dom'
+import roleContext from '../utils/RoleContext';
 
 const Navbar = () => {
     const [isOpenModal, setIsOpenModal] = useState(false);
 
     const { user,setUser } = useContext(userContext)
+    const { role,setRole } = useContext(roleContext)
 
-    const [ role,setRole ] = useState(null)
+    const [ localRole,setlocalRole ] = useState(null)
     const [ error,setError ] = useState(null)
 
     const navigate = useNavigate()
@@ -20,7 +22,7 @@ const Navbar = () => {
 
     const handleModal = () =>{
         if(!isOpenModal){
-            setRole(null)
+            setlocalRole(null)
             setError(null)
         }
         setIsOpenModal(!isOpenModal)
@@ -28,22 +30,27 @@ const Navbar = () => {
 
     const handleLogout = () =>{
         setUser(null)
+        setRole(null)
+        alert('Successfully signed Out')
+        setTimeout(() => {
+            navigate('/')
+        }, 2000);
     }
 
     const handleClick = () =>{
-        if(!role){
-            setError('Select your role')
+        if(!localRole){
+            setError('Select your Role')
             return;
         } 
 
-        if(role === 'farmer'){
+        if(localRole === 'farmer'){
             navigate('/farmerSignIn')
         }else{
             navigate('/buyerSignIn')
         }
 
         setIsOpenModal(false)
-        setRole(null)
+        setlocalRole(null)
         setError(null)
     }
 
@@ -53,7 +60,7 @@ const Navbar = () => {
                 <div className="bg-white rounded-lg shadow-lg w-fit max-w-full">
                     {/* Modal Header */}
                     <div className="flex items-center justify-between p-4 border-b">
-                        <h2 className="text-lg font-semibold text-gray-800">Choose Your Role</h2>
+                        <h2 className="text-lg font-semibold text-gray-800">Choose Your localRole</h2>
                         <button onClick={handleModal}>
                             <X className="h-5 w-5 text-gray-600 hover:text-black" />
                         </button>
@@ -61,18 +68,18 @@ const Navbar = () => {
 
                     {/* Modal Body (optional) */}
                     <div className="p-4">
-                        {/* Role selection buttons or UI goes here */}
+                        {/* localRole selection buttons or UI goes here */}
                         <div className='flex items-center gap-10'>
                             <div
-                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${role === 'farmer' ? 'border-2 border-green-700' : ''}`}
-                                onClick ={()=>setRole('farmer')}
+                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${localRole === 'farmer' ? 'border-2 border-green-700' : ''}`}
+                                onClick ={()=>setlocalRole('farmer')}
                             >
                                 <Tractor className='h-20 w-20 text-green-700' />
                                 <p className='text-2xl font-semibold'>Farmer</p>
                             </div>
                             <div 
-                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${role === 'consumer' ? 'border-2 border-green-700' : ''}`}
-                                onClick={()=>setRole('consumer')}
+                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${localRole === 'consumer' ? 'border-2 border-green-700' : ''}`}
+                                onClick={()=>setlocalRole('consumer')}
                             >
                                 <Users className='h-20 w-20 text-green-700' />
                                 <p className='text-2xl font-semibold'>Consumer</p>
