@@ -49,4 +49,16 @@ const uploadProduct = (req,res,next) => {
     })
 }
 
-module.exports = { signUp, signIn, uploadProduct }
+const getAllProducts = (req,res,next) =>{
+    const farmerId = req.query.farmerId
+
+
+    if(!farmerId) return res.status(400).json({message:"Missing Unique ID"})
+
+    pool.query('SELECT * FROM products WHERE farmerId = ?',[farmerId],(err,results)=>{
+        if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+        return res.status(200).json({results})
+    })
+}
+
+module.exports = { signUp, signIn, uploadProduct, getAllProducts }

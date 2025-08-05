@@ -22,7 +22,8 @@ const Navbar = () => {
     ];
 
     const farmerNavItems = [
-        { name: 'Upload', to:'/uploadProduct'}
+        { name: 'Upload', to:'/uploadProduct'},
+        { name: 'Uploaded Products', to:'/allProducts'}
     ]
 
     const consumerNavItems = [

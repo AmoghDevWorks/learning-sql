@@ -13,6 +13,7 @@ import BuyerSignUp from './buyer/BuyerSignUp'
 import BuyerSignIn from './buyer/BuyerSignIn'
 import ContactUs from './components/ContactUs'
 import UploadProduct from './farmer/UploadProduct'
+import AllProducts from './farmer/AllProducts'
 
 const Structure = () =>{
   return (
@@ -68,6 +69,10 @@ const appRouter = createBrowserRouter([
       {
         path:'/viewFarmerProducts',
         element:<FarmerProducts />
+      },
+      {
+        path:'/allProducts',
+        element:<AllProducts />
       }
     ]
   }
