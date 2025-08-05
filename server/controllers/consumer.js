@@ -34,4 +34,11 @@ const signIn = (req,res,next) =>{
     })
 }
 
-module.exports = { signUp, signIn }
+const allProducts = (req,res,next) =>{
+    pool.query('SELECT * FROM products WHERE totalQuantity>?',[0],(err,results)=>{
+        if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+        return res.status(200).json(results)
+    })
+}
+
+module.exports = { signUp, signIn, allProducts }

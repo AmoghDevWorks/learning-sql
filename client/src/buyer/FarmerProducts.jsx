@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Plus, MapPin, Phone, Star, Filter, ShoppingCart, User, Leaf, TrendingUp, Calendar, Weight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, MapPin, Phone, Star, Filter, ShoppingCart, User, Leaf, TrendingUp, Calendar, Weight, Minus, Trash2 } from 'lucide-react';
+import axios from 'axios'
 
 const FarmMarketplace = () => {
   const [userType, setUserType] = useState('buyer'); // 'farmer' or 'buyer'
@@ -7,83 +8,69 @@ const FarmMarketplace = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cart, setCart] = useState([]);
-
-  // Sample data
-  const products = [
-    {
-      id: 1,
-      name: 'Organic Tomatoes',
-      farmer: 'Green Valley Farm',
-      location: 'Karnataka, India',
-      price: 45,
-      unit: 'kg',
-      quantity: 500,
-      category: 'vegetables',
-      image: '🍅',
-      rating: 4.8,
-      phone: '+91 9876543210',
-      description: 'Fresh organic tomatoes, pesticide-free',
-      harvestDate: '2025-08-01'
-    },
-    {
-      id: 2,
-      name: 'Basmati Rice',
-      farmer: 'Sunrise Agriculture',
-      location: 'Punjab, India',
-      price: 80,
-      unit: 'kg',
-      quantity: 2000,
-      category: 'grains',
-      image: '🌾',
-      rating: 4.9,
-      phone: '+91 9876543211',
-      description: 'Premium quality basmati rice',
-      harvestDate: '2025-07-15'
-    },
-    {
-      id: 3,
-      name: 'Fresh Milk',
-      farmer: 'Dairy Dreams',
-      location: 'Tamil Nadu, India',
-      price: 55,
-      unit: 'liter',
-      quantity: 200,
-      category: 'dairy',
-      image: '🥛',
-      rating: 4.7,
-      phone: '+91 9876543212',
-      description: 'Pure cow milk, daily fresh',
-      harvestDate: '2025-08-03'
-    },
-    {
-      id: 4,
-      name: 'Alphonso Mangoes',
-      farmer: 'Tropical Orchards',
-      location: 'Maharashtra, India',
-      price: 120,
-      unit: 'kg',
-      quantity: 300,
-      category: 'fruits',
-      image: '🥭',
-      rating: 4.9,
-      phone: '+91 9876543213',
-      description: 'Premium Alphonso mangoes, export quality',
-      harvestDate: '2025-07-20'
-    }
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const categories = [
     { id: 'all', name: 'All Products', icon: '🌱' },
     { id: 'vegetables', name: 'Vegetables', icon: '🥕' },
     { id: 'fruits', name: 'Fruits', icon: '🍎' },
     { id: 'grains', name: 'Grains', icon: '🌾' },
-    { id: 'dairy', name: 'Dairy', icon: '🥛' }
+    { id: 'dairy', name: 'Dairy', icon: '🥛' },
   ];
+
+  const fetchProducts = () =>{
+    setLoading(true)
+    axios.get('http://localhost:8000/consumer/allProducts')
+    .then(results => {
+      setProducts(results.data)
+    })
+    .catch(err => {
+      setError(err.message)
+    })
+    setLoading(false)
+  }
+
+  // Fetch products from API
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/consumer/allProducts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const data = await response.json();
+      // Filter products with totalQuantity > 0
+      const availableProducts = data.filter(product => product.totalQuantity > 0);
+      setProducts(availableProducts);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get emoji based on category
+  const getCategoryEmoji = (category) => {
+    const emojiMap = {
+      'vegetables': '🥕',
+      'fruits': '🍎',
+      'grains': '🌾',
+      'dairy': '🥛',
+    };
+    return emojiMap[category.toLowerCase()] || '🌱';
+  };
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.farmer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+                         (product.farmName && product.farmName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         product.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
@@ -91,14 +78,36 @@ const FarmMarketplace = () => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
-        return prev.map(item => 
-          item.id === product.id 
-            ? { ...item, cartQuantity: item.cartQuantity + 1 }
-            : item
-        );
+        if (existing.cartQuantity < product.totalQuantity) {
+          return prev.map(item => 
+            item.id === product.id 
+              ? { ...item, cartQuantity: item.cartQuantity + 1 }
+              : item
+          );
+        }
+        return prev; // Don't add if already at max quantity
       }
       return [...prev, { ...product, cartQuantity: 1 }];
     });
+  };
+
+  const updateCartQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    setCart(prev => prev.map(item => {
+      if (item.id === productId) {
+        const maxQuantity = item.totalQuantity;
+        return { ...item, cartQuantity: Math.min(newQuantity, maxQuantity) };
+      }
+      return item;
+    }));
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prev => prev.filter(item => item.id !== productId));
   };
 
   const getTotalItems = () => {
@@ -106,63 +115,68 @@ const FarmMarketplace = () => {
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.price * item.cartQuantity), 0);
+    return cart.reduce((total, item) => total + (item.pricePerKg * item.cartQuantity), 0);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   const ProductCard = ({ product }) => (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow border border-green-100">
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className="text-4xl mb-2">{product.image}</div>
-          <div className="flex items-center bg-yellow-100 px-2 py-1 rounded-full">
-            <Star className="w-4 h-4 text-yellow-500 mr-1" />
-            <span className="text-sm font-medium">{product.rating}</span>
+          <div className="text-4xl mb-2">{getCategoryEmoji(product.category)}</div>
+          <div className="flex items-center bg-green-100 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-green-800 capitalize">{product.category}</span>
           </div>
         </div>
         
         <h3 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
-        <p className="text-gray-600 mb-3">{product.description}</p>
+        {product.description && product.description !== '-' && (
+          <p className="text-gray-600 mb-3">{product.description}</p>
+        )}
         
         <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-600">
-            <User className="w-4 h-4 mr-2 text-green-600" />
-            <span className="font-medium">{product.farmer}</span>
-          </div>
+          {product.farmName && product.farmName !== '-' && (
+            <div className="flex items-center text-sm text-gray-600">
+              <User className="w-4 h-4 mr-2 text-green-600" />
+              <span className="font-medium">{product.farmName}</span>
+            </div>
+          )}
           <div className="flex items-center text-sm text-gray-600">
             <MapPin className="w-4 h-4 mr-2 text-red-500" />
             <span>{product.location}</span>
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-            <span>Harvested: {product.harvestDate}</span>
+            <span>Harvested: {formatDate(product.harvestDate)}</span>
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Weight className="w-4 h-4 mr-2 text-purple-500" />
-            <span>{product.quantity} {product.unit} available</span>
+            <span>{product.totalQuantity} kg available</span>
           </div>
         </div>
         
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-2xl font-bold text-green-600">₹{product.price}</span>
-            <span className="text-gray-500 ml-1">/{product.unit}</span>
+            <span className="text-2xl font-bold text-green-600">₹{product.pricePerKg}</span>
+            <span className="text-gray-500 ml-1">/kg</span>
           </div>
           {userType === 'buyer' && (
             <button
               onClick={() => addToCart(product)}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+              disabled={cart.find(item => item.id === product.id && item.cartQuantity >= product.totalQuantity)}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Add to Cart
             </button>
           )}
-        </div>
-        
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center text-sm text-gray-600">
-            <Phone className="w-4 h-4 mr-2 text-green-600" />
-            <span>{product.phone}</span>
-          </div>
         </div>
       </div>
     </div>
@@ -171,25 +185,45 @@ const FarmMarketplace = () => {
   const AddProductForm = () => {
     const [newProduct, setNewProduct] = useState({
       name: '',
-      price: '',
-      quantity: '',
-      unit: 'kg',
-      category: 'vegetables',
       description: '',
-      phone: ''
+      totalQuantity: '',
+      pricePerKg: '',
+      harvestDate: '',
+      farmName: '',
+      location: '',
+      category: 'vegetables'
     });
 
-    const handleSubmit = () => {
-      alert('Product listed successfully! (Demo - would save to database)');
-      setNewProduct({
-        name: '',
-        price: '',
-        quantity: '',
-        unit: 'kg',
-        category: 'vegetables',
-        description: '',
-        phone: ''
-      });
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const response = await fetch('/farmer/addProduct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newProduct)
+        });
+        
+        if (response.ok) {
+          alert('Product listed successfully!');
+          setNewProduct({
+            name: '',
+            description: '',
+            totalQuantity: '',
+            pricePerKg: '',
+            harvestDate: '',
+            farmName: '',
+            location: '',
+            category: 'vegetables'
+          });
+          fetchProducts(); // Refresh products list
+        } else {
+          throw new Error('Failed to add product');
+        }
+      } catch (error) {
+        alert('Error adding product: ' + error.message);
+      }
     };
 
     return (
@@ -197,9 +231,9 @@ const FarmMarketplace = () => {
         <div className="bg-white rounded-xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">List New Product</h2>
           
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
               <input
                 type="text"
                 value={newProduct.name}
@@ -209,58 +243,6 @@ const FarmMarketplace = () => {
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                <input
-                  type="number"
-                  value={newProduct.price}
-                  onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-                <input
-                  type="number"
-                  value={newProduct.quantity}
-                  onChange={(e) => setNewProduct({...newProduct, quantity: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                <select
-                  value={newProduct.unit}
-                  onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="kg">Kilogram</option>
-                  <option value="liter">Liter</option>
-                  <option value="piece">Piece</option>
-                  <option value="dozen">Dozen</option>
-                </select>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-              <select
-                value={newProduct.category}
-                onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="vegetables">Vegetables</option>
-                <option value="fruits">Fruits</option>
-                <option value="grains">Grains</option>
-                <option value="dairy">Dairy</option>
-              </select>
-            </div>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
@@ -268,28 +250,94 @@ const FarmMarketplace = () => {
                 onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                 rows="3"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
+                placeholder="Optional description of your product"
               />
             </div>
             
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price per Kg (₹) *</label>
+                <input
+                  type="number"
+                  value={newProduct.pricePerKg}
+                  onChange={(e) => setNewProduct({...newProduct, pricePerKg: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  required
+                  min="1"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Total Quantity (Kg) *</label>
+                <input
+                  type="number"
+                  value={newProduct.totalQuantity}
+                  onChange={(e) => setNewProduct({...newProduct, totalQuantity: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  required
+                  min="1"
+                />
+              </div>
+            </div>
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Harvest Date *</label>
               <input
-                type="tel"
-                value={newProduct.phone}
-                onChange={(e) => setNewProduct({...newProduct, phone: e.target.value})}
+                type="date"
+                value={newProduct.harvestDate}
+                onChange={(e) => setNewProduct({...newProduct, harvestDate: e.target.value})}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
             </div>
             
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Farm Name</label>
+              <input
+                type="text"
+                value={newProduct.farmName}
+                onChange={(e) => setNewProduct({...newProduct, farmName: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Optional farm name"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+              <input
+                type="text"
+                value={newProduct.location}
+                onChange={(e) => setNewProduct({...newProduct, location: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="City, State"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+              <select
+                value={newProduct.category}
+                onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                required
+              >
+                <option value="vegetables">Vegetables</option>
+                <option value="fruits">Fruits</option>
+                <option value="grains">Grains</option>
+                <option value="dairy">Dairy</option>
+                <option value="pulses">Pulses</option>
+                <option value="spices">Spices</option>
+              </select>
+            </div>
+            
             <button
-              onClick={handleSubmit}
+              type="submit"
               className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
             >
               List Product
             </button>
-          </div>
+          </form>
         </div>
       </div>
     );
@@ -310,16 +358,51 @@ const FarmMarketplace = () => {
             <div className="space-y-4 mb-8">
               {cart.map(item => (
                 <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-2xl mr-4">{item.image}</span>
-                    <div>
+                  <div className="flex items-center flex-1">
+                    <span className="text-2xl mr-4">{getCategoryEmoji(item.category)}</span>
+                    <div className="flex-1">
                       <h3 className="font-medium">{item.name}</h3>
-                      <p className="text-sm text-gray-600">{item.farmer}</p>
+                      <p className="text-sm text-gray-600">
+                        {item.farmName && item.farmName !== '-' ? item.farmName : 'Local Farm'}
+                      </p>
+                      <p className="text-sm text-gray-500">{item.location}</p>
+                      <p className="text-sm text-green-600 font-medium">₹{item.pricePerKg}/kg</p>
                     </div>
                   </div>
+                  
                   <div className="flex items-center space-x-4">
-                    <span className="text-gray-600">Qty: {item.cartQuantity}</span>
-                    <span className="font-medium">₹{item.price * item.cartQuantity}</span>
+                    {/* Quantity controls */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => updateCartQuantity(item.id, item.cartQuantity - 1)}
+                        className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      
+                      <span className="w-12 text-center font-medium">{item.cartQuantity} kg</span>
+                      
+                      <button
+                        onClick={() => updateCartQuantity(item.id, item.cartQuantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                        disabled={item.cartQuantity >= item.totalQuantity}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    {/* Price */}
+                    <div className="text-center min-w-[80px]">
+                      <span className="font-medium">₹{item.pricePerKg * item.cartQuantity}</span>
+                    </div>
+                    
+                    {/* Delete button */}
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -327,8 +410,11 @@ const FarmMarketplace = () => {
             
             <div className="border-t pt-6">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-xl font-bold">Total: ₹{getTotalPrice()}</span>
-                <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium">
+                <div>
+                  <p className="text-gray-600">Total Items: {getTotalItems()} kg</p>
+                  <span className="text-2xl font-bold">Total: ₹{getTotalPrice()}</span>
+                </div>
+                <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
                   Proceed to Checkout
                 </button>
               </div>
@@ -339,48 +425,90 @@ const FarmMarketplace = () => {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md">
+          <div className="text-red-500 text-xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Products</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={fetchProducts}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('browse')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'browse'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {userType === 'buyer' ? 'Browse Products' : 'View All Products'}
-            </button>
-            
-            {userType === 'farmer' && (
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-8">
               <button
-                onClick={() => setActiveTab('add')}
+                onClick={() => setActiveTab('browse')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'add'
+                  activeTab === 'browse'
                     ? 'border-green-500 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                List Product
+                {userType === 'buyer' ? 'Browse Products' : 'View All Products'}
               </button>
-            )}
+              
+              {userType === 'farmer' && (
+                <button
+                  onClick={() => setActiveTab('add')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'add'
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  List Product
+                </button>
+              )}
+              
+              {userType === 'buyer' && (
+                <button
+                  onClick={() => setActiveTab('cart')}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'cart'
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Cart ({getTotalItems()})
+                </button>
+              )}
+            </div>
             
-            {userType === 'buyer' && (
+            {/* User Type Switcher */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">Switch to:</span>
               <button
-                onClick={() => setActiveTab('cart')}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'cart'
-                    ? 'border-green-500 text-green-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                onClick={() => setUserType(userType === 'buyer' ? 'farmer' : 'buyer')}
+                className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full hover:bg-green-200 transition-colors"
               >
-                Cart ({getTotalItems()})
+                {userType === 'buyer' ? 'Farmer' : 'Buyer'}
               </button>
-            )}
+            </div>
           </div>
         </div>
       </nav>
@@ -396,16 +524,12 @@ const FarmMarketplace = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
-                    placeholder="Search products or farmers..."
+                    placeholder="Search products, farms, or locations..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
-                <button className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <Filter className="w-5 h-5 mr-2 text-gray-500" />
-                  Filters
-                </button>
               </div>
               
               {/* Categories */}
