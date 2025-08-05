@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import userContext from '../utils/UserContext'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 export default function ProductForm() {
   const [formData, setFormData] = useState({
@@ -9,10 +12,13 @@ export default function ProductForm() {
     harvestDate: '',
     farmName: '',
     location: '',
-    category: ''
+    category: '',
+    farmerId: null,
   });
 
   const [errors, setErrors] = useState({});
+  const { user,setUser } = useContext(userContext)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,9 +53,18 @@ export default function ProductForm() {
   const handleSubmit = () => {
     
     if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // Here you would typically send the data to your backend
-      alert('Product registered successfully!');
+        formData.farmerId = user
+        
+        axios.post('http://localhost:8000/farmer/uploadProduct',formData)
+        .then(results => {
+            alert('Product sucessfully created')
+            setTimeout(() => {
+                navigate('/')
+            }, 1000);
+        })
+        .catch(err => {
+            alert('Failed to create the product')
+        })
     }
   };
 
@@ -217,7 +232,7 @@ export default function ProductForm() {
 
               <div>
                 <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                  Location
+                  Location *
                 </label>
                 <input
                   type="text"

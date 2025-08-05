@@ -29,7 +29,24 @@ const signIn = (req,res,next) =>{
 }
 
 const uploadProduct = (req,res,next) => {
-    const { name, description, totalQuantity, pricePerKg, harvestDate, farmName, location, category } = req.body 
+    const { name, description, totalQuantity, pricePerKg, harvestDate, farmName, location, category, farmerId } = req.body
+
+    if( !farmerId ) return res.status(401).json({message:"Invalid credentials Please login"})
+    if( !name || !totalQuantity || !pricePerKg || !harvestDate || !location || !category ) return res.status(400).json({message:"Fill the fields"})
+
+    const safeDescription = description?.trim() || '-'
+    const safeFarmName = farmName?.trim() || '-'
+
+    const query = `INSERT INTO products ( name, description, totalQuantity, pricePerKg, harvestDate, farmName, location, category, farmerId ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    const values = [ name, safeDescription, totalQuantity, pricePerKg, harvestDate, safeFarmName, location, category, farmerId]
+
+    pool.query(query,values,(err,results)=>{
+        if(err){
+            return res.status(500).json({message:"Internal Server Error", details:err})
+        }
+        
+        return res.status(201).json({message:"Successfully created the product"})
+    })
 }
 
 module.exports = { signUp, signIn, uploadProduct }
