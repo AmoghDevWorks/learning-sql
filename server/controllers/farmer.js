@@ -28,4 +28,8 @@ const signIn = (req,res,next) =>{
     })
 }
 
-module.exports = { signUp, signIn }
+const uploadProduct = (req,res,next) => {
+    const { name, description, totalQuantity, pricePerKg, harvestDate, farmName, location, category } = req.body 
+}
+
+module.exports = { signUp, signIn, uploadProduct }

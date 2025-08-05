@@ -18,8 +18,16 @@ const Navbar = () => {
     const navItems = [
         { name: 'Home', to:'/'},
         { name: 'About', to:'/about'},
-        { name: 'Contact',to:'/contactUs'}
+        { name: 'Contact',to:'/contactUs'},
     ];
+
+    const farmerNavItems = [
+        { name: 'Upload', to:'/uploadProduct'}
+    ]
+
+    const consumerNavItems = [
+        { name: 'Order', to:'/viewFarmerProducts'}
+    ]
 
     const handleModal = () =>{
         if(!isOpenModal){
@@ -114,14 +122,38 @@ const Navbar = () => {
             </div>
             <div className="hidden md:flex items-center space-x-4">
                 {navItems.map((item) => (
-                <Link
-                    key={item.name}
-                    to={item.to}
-                    className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-md font-semibold text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
-                >
-                    {item.name}
-                </Link>
+                    <Link
+                        key={item.name}
+                        to={item.to}
+                        className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-md font-semibold text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
+                    >
+                        {item.name}
+                    </Link>
                 ))}
+                {role === 'farmer' &&  
+                    farmerNavItems.map(item => {
+                        return(
+                            <Link
+                                key={item.name}
+                                to={item.to}
+                                className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-md font-semibold text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
+                            >
+                                {item.name}
+                            </Link>
+                        )
+                    })
+                }
+                {role === 'consumer' && 
+                    consumerNavItems.map(item => (
+                            <Link
+                                key={item.name}
+                                to={item.to}
+                                className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-md font-semibold text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
+                            >
+                                {item.name}
+                            </Link>
+                    ))
+                }
             </div>
             <div>
                 { 
