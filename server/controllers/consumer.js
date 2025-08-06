@@ -35,9 +35,24 @@ const signIn = (req,res,next) =>{
 }
 
 const allProducts = (req,res,next) =>{
-    pool.query('SELECT * FROM products WHERE totalQuantity>?',[0],(err,results)=>{
+    const userId = req.query.id
+
+    if(!userId) return res.status(404).json({message:"failed to retrieve the UserId"})
+
+    pool.query('SELECT * FROM consumer WHERE id=?',[userId],(err,results)=>{
         if(err) return res.status(500).json({message:"Internal Server Error",details:err})
-        return res.status(200).json(results)
+
+        if(results.length === 0) return res.status(404).json({message:"Unable to find the user"})
+        
+        const user = results[0]
+
+        pool.query('SELECT * FROM products WHERE totalQuantity>? ',[0],(err,results)=>{
+            if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+            
+            const filteredResults = results.filter(food=>food.location === user.location)
+
+            return res.status(200).json(filteredResults)
+        })
     })
 }
 

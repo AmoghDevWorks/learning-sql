@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Search, MapPin, User, Calendar, Weight, Minus, Trash2, Plus, ShoppingCart } from 'lucide-react';
 import axios from 'axios'
+import userContext from '../utils/UserContext'
+import { useNavigate } from 'react-router-dom'
 
 const ConsumerMarketplace = () => {
   const [activeTab, setActiveTab] = useState('browse');
@@ -10,6 +12,9 @@ const ConsumerMarketplace = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const { user,setUser } = useContext(userContext)
+  const navigate = useNavigate()
 
   const categories = [
     { id: 'all', name: 'All Products', icon: '🌱' },
@@ -21,7 +26,13 @@ const ConsumerMarketplace = () => {
 
   const fetchProducts = () =>{
     setLoading(true)
-    axios.get('http://localhost:8000/consumer/allProducts')
+
+    if(!user){
+      alert('Please login first')
+      navigate('/consumerSignIn')
+    }
+
+    axios.get(`http://localhost:8000/consumer/allProducts?id=${user}`)
     .then(results => {
       setProducts(results.data)
     })
