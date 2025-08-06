@@ -56,4 +56,103 @@ const allProducts = (req,res,next) =>{
     })
 }
 
-module.exports = { signUp, signIn, allProducts }
+const orderProduct = (req, res) => {
+  const cartItems = req.body;
+  const consumerId = req.query.consumerId;
+
+  if (!consumerId) {
+    return res.status(401).json({ message: "Login required" });
+  }
+
+  // Calculate totalRate
+  let totalRate = 0;
+  for (const item of cartItems) {
+    totalRate += item.pricePerKg * item.cartQuantity;
+  }
+
+  pool.getConnection((err, conn) => {
+    if (err) {
+      return res.status(500).json({ message: "DB connection failed" });
+    }
+
+    conn.beginTransaction(err => {
+      if (err) {
+        conn.release();
+        return res.status(500).json({ message: "Failed to start transaction" });
+      }
+
+      // Insert into orders
+      conn.query(
+        'INSERT INTO orders (consumerId, totalRate) VALUES (?, ?)',
+        [consumerId, totalRate],
+        (err, orderResult) => {
+          if (err) {
+            return conn.rollback(() => {
+              conn.release();
+              res.status(500).json({ message: "Failed to insert order" });
+            });
+          }
+
+          const orderId = orderResult.insertId;
+
+          // Function to process each cart item sequentially
+          let i = 0;
+          function processItem() {
+            if (i >= cartItems.length) {
+              // All items processed, commit transaction
+              return conn.commit(err => {
+                if (err) {
+                  return conn.rollback(() => {
+                    conn.release();
+                    res.status(500).json({ message: "Failed to commit transaction" });
+                  });
+                }
+                conn.release();
+                return res.status(201).json({ message: "Order placed successfully", orderId });
+              });
+            }
+
+            const item = cartItems[i];
+
+            // Update product quantity if enough stock
+            conn.query(
+              'UPDATE products SET totalQuantity = totalQuantity - ? WHERE id = ? AND totalQuantity >= ?',
+              [item.cartQuantity, item.id, item.cartQuantity],
+              (err, updateResult) => {
+                if (err || updateResult.affectedRows === 0) {
+                  return conn.rollback(() => {
+                    conn.release();
+                    res.status(400).json({ message: `Product "${item.name}" not available in sufficient quantity.` });
+                  });
+                }
+
+                // Insert into order_items
+                conn.query(
+                  'INSERT INTO order_items (order_id, product_id, quantity, pricePerKg) VALUES (?, ?, ?, ?)',
+                  [orderId, item.id, item.cartQuantity, item.pricePerKg],
+                  (err) => {
+                    if (err) {
+                      return conn.rollback(() => {
+                        conn.release();
+                        res.status(500).json({ message: "Failed to insert order item" });
+                      });
+                    }
+
+                    i++;
+                    processItem(); // process next item
+                  }
+                );
+              }
+            );
+          }
+
+          // Start processing cart items
+          processItem();
+        }
+      );
+    });
+  });
+};
+
+
+module.exports = { signUp, signIn, allProducts, orderProduct }

@@ -118,6 +118,20 @@ const ConsumerMarketplace = () => {
     });
   };
 
+  const handleOrder = () =>{
+    if(cart.length === 0) return;
+
+    axios.post(`http://localhost:8000/consumer/orderProduct?consumerId=${user}`,cart)
+    .then(results => {
+      alert('Ordered Successfully')
+      navigate('/')
+    })
+    .catch(err => {
+      console.log(err)
+      setError('unable to order')
+    })
+  }
+
   const ProductCard = ({ product }) => (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow border border-green-100">
       <div className="p-6">
@@ -249,7 +263,10 @@ const ConsumerMarketplace = () => {
                   <p className="text-gray-600">Total Items: {getTotalItems()} kg</p>
                   <span className="text-2xl font-bold">Total: ₹{getTotalPrice()}</span>
                 </div>
-                <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                <button
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                  onClick={handleOrder}
+                >
                   Proceed to Checkout
                 </button>
               </div>
