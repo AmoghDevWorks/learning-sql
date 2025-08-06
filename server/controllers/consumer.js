@@ -2,11 +2,11 @@ const express = require('express')
 const pool = require('../config/db')
 
 const signUp = (req,res,next) => {
-    const { fullName,email,password,phoneNumber } = req.body
+    const { fullName,email,password,phoneNumber,location } = req.body
 
     if( !fullName || !email || !password || !phoneNumber ) return res.status(404).json({message:"Fill the fields"})
 
-    pool.query('INSERT INTO consumer (name, email, password, contact) VALUES (?, ?, ?, ?)',[fullName,email,password,phoneNumber],(err,results)=>{
+    pool.query('INSERT INTO consumer (name, email, password, location, contact) VALUES (?, ?, ?, ?, ?)',[fullName,email,password,location,phoneNumber],(err,results)=>{
         if(err){
             console.log(err)
             if(err.code === 'ER_DUP_ENTRY') return res.status(404).json({message:'Account already exists'})
