@@ -1087,8 +1087,8 @@ export default function ProductForm() {
                   <option value="" disabled>
                     Select district & state
                   </option>
-                  {indianDistricts.map((district) => (
-                    <option key={district.value} value={district.value}>
+                  {indianDistricts.map((district,idx) => (
+                    <option key={idx} value={district.value}>
                       {district.label}
                     </option>
                   ))}
