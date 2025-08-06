@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Upload, MessageSquare, LayoutDashboard, ShoppingCart, Users, Sprout } from 'lucide-react';
+import {useNavigate} from 'react-router-dom'
+import roleContext from '../utils/RoleContext';
 
 const Home = () => {
+
+  const { role,setRole } = useContext(roleContext)
+  const navigate = useNavigate()
+
   const features = [
     {
       icon: Upload,
@@ -51,10 +57,22 @@ const Home = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-200">
+            <button 
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
+              onClick={()=>{
+                if(role!='farmer') navigate('/farmerSignIn')
+                else navigate('/uploadProduct')
+              }}
+            >
               Start Selling
             </button>
-            <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 px-8 py-3 rounded-lg font-semibold transition-colors duration-200">
+            <button
+              className="border-2 border-green-600 text-green-600 hover:bg-green-50 px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
+              onClick={()=>{
+                if(role!='consumer') navigate('/buyerSignIn')
+                else navigate('/allProducts')
+              }}
+            >
               Browse Products
             </button>
           </div>
