@@ -39,24 +39,24 @@ const Navbar = () => {
         setIsOpenModal(!isOpenModal)
     }
 
-    const handleLogout = () =>{
-        setUser(null)
-        setRole(null)
-        // toast.success('SignedOut successfully', {
-        //     position: "top-right",
-        //     autoClose: 5000,
-        //     hideProgressBar: false,
-        //     closeOnClick: true,
-        //     pauseOnHover: true,
-        //     draggable: true,
-        //     progress: undefined,
-        //     theme: "light",
-        //     transition: Bounce,
-        // });
-        // setTimeout(() => {
-        //     navigate('/')
-        // }, 2000);
-    }
+    const handleLogout = () => {
+        toast.success('Signed out successfully', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+            transition: Bounce,
+        });
+
+        setTimeout(() => {
+            setUser(null);
+            setRole(null);
+            navigate('/');
+        }, 1500); 
+    };
 
     const handleClick = () =>{
         if(!localRole){
@@ -74,25 +74,6 @@ const Navbar = () => {
         setlocalRole(null)
         setError(null)
     }
-
-    useEffect(()=>{
-        if(!user){
-            toast.success('SignedOut successfully', {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
-            setTimeout(() => {
-                navigate('/')
-            }, 2000);
-        }
-    },[user])
 
     if(isOpenModal){
         return(
