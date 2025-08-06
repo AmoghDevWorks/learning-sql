@@ -4,6 +4,7 @@ import axios from 'axios'
 import userContext from '../utils/UserContext'
 import { useNavigate } from 'react-router-dom';
 import roleContext from '../utils/RoleContext';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
 
 const indianDistricts = [
   // Andhra Pradesh
@@ -903,7 +904,17 @@ const BuyerSignUp = () => {
     if (validateForm()) {
       axios.post('http://localhost:8000/consumer/signUp',formData)
       .then(results => {
-        alert('SignUp successfully')
+        toast.success('SignUp Successfully', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
         setUser(results.data.userId)
         setRole('consumer')
         setTimeout(() => {
@@ -911,6 +922,17 @@ const BuyerSignUp = () => {
         }, (3000));
       })
       .catch(err =>{
+        toast.error((err.response.data.message || 'Failed to SignUp'), {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
         setErrors(err.message)
       })
     }
@@ -918,6 +940,7 @@ const BuyerSignUp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">

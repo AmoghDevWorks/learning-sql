@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import userContext from '../utils/UserContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 
 export default function ProductForm() {
 
@@ -878,14 +879,33 @@ export default function ProductForm() {
         
         axios.post('http://localhost:8000/farmer/uploadProduct',formData)
         .then(results => {
-            alert('Product sucessfully created')
+            toast.success('Product created successfully', {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              transition: Bounce,
+            });
             setTimeout(() => {
                 navigate('/')
             }, 1000);
         })
         .catch(err => {
-            console.log(err)
-            alert('Failed to create the product')
+            toast.error((err?.response?.data?.message.trim() || 'Failed to upload the product'), {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              transition: Bounce,
+            });
         })
     }
   };
@@ -906,6 +926,7 @@ export default function ProductForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
+      <ToastContainer />
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">

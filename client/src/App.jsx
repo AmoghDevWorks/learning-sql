@@ -15,9 +15,13 @@ import ContactUs from './components/ContactUs'
 import UploadProduct from './farmer/UploadProduct'
 import AllProducts from './farmer/AllProducts'
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const Structure = () =>{
   return (
     <div>
+      <ToastContainer />
       <Navbar />
       <Outlet />
       <Footer />

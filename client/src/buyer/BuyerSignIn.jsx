@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import userContext from '../utils/UserContext'
 import roleContext from '../utils/RoleContext';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+
 const BuyerSignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -57,12 +59,33 @@ const BuyerSignIn = () => {
       .then(result=>{
         setUser(result.data.userId)
         setRole('consumer')
-        alert('SignIn successfull')
+        toast.success('SignIn Successfully', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
         setTimeout(() => {
           navigate('/')
         }, 2000);
       })
       .catch(err=>{
+        toast.error((err.response.data.message || 'Failed to SignIn'), {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
         setErrors(err.message)
       })
     }
@@ -70,6 +93,7 @@ const BuyerSignIn = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           {/* Logo */}

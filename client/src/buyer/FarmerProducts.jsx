@@ -3,6 +3,7 @@ import { Search, MapPin, User, Calendar, Weight, Minus, Trash2, Plus, ShoppingCa
 import axios from 'axios'
 import userContext from '../utils/UserContext'
 import { useNavigate } from 'react-router-dom'
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 
 const ConsumerMarketplace = () => {
   const [activeTab, setActiveTab] = useState('browse');
@@ -28,8 +29,20 @@ const ConsumerMarketplace = () => {
     setLoading(true)
 
     if(!user){
-      alert('Please login first')
-      navigate('/consumerSignIn')
+      toast.error('Login Required', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setTimeout(() => {
+        navigate('/consumerSignIn')
+      }, 2000);
     }
 
     axios.get(`http://localhost:8000/consumer/allProducts?id=${user}`)
@@ -123,11 +136,33 @@ const ConsumerMarketplace = () => {
 
     axios.post(`http://localhost:8000/consumer/orderProduct?consumerId=${user}`,cart)
     .then(results => {
-      alert('Ordered Successfully')
-      navigate('/')
+      toast.success('Ordered Successfully', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setTimeout(() => {
+        navigate('/')
+      }, 2000);
     })
     .catch(err => {
-      console.log(err)
+      toast.error((err?.response?.data?.message.trim() || 'Failed to Order'), {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
       setError('unable to order')
     })
   }
@@ -308,6 +343,7 @@ const ConsumerMarketplace = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <ToastContainer />
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

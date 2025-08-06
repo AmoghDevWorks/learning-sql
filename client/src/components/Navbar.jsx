@@ -1,8 +1,9 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { X, Sprout,Tractor,Users  } from 'lucide-react';
 import userContext from '../utils/UserContext';
 import { Link, useNavigate } from 'react-router-dom'
 import roleContext from '../utils/RoleContext';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 
 const Navbar = () => {
     const [isOpenModal, setIsOpenModal] = useState(false);
@@ -41,10 +42,20 @@ const Navbar = () => {
     const handleLogout = () =>{
         setUser(null)
         setRole(null)
-        alert('Successfully signed Out')
-        setTimeout(() => {
-            navigate('/')
-        }, 2000);
+        // toast.success('SignedOut successfully', {
+        //     position: "top-right",
+        //     autoClose: 5000,
+        //     hideProgressBar: false,
+        //     closeOnClick: true,
+        //     pauseOnHover: true,
+        //     draggable: true,
+        //     progress: undefined,
+        //     theme: "light",
+        //     transition: Bounce,
+        // });
+        // setTimeout(() => {
+        //     navigate('/')
+        // }, 2000);
     }
 
     const handleClick = () =>{
@@ -63,6 +74,25 @@ const Navbar = () => {
         setlocalRole(null)
         setError(null)
     }
+
+    useEffect(()=>{
+        if(!user){
+            toast.success('SignedOut successfully', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
+            setTimeout(() => {
+                navigate('/')
+            }, 2000);
+        }
+    },[user])
 
     if(isOpenModal){
         return(

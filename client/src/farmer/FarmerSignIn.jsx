@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useContext } from 'react';
 import userContext from '../utils/UserContext';
 import roleContext from '../utils/RoleContext';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
 
 const FarmerSignIn = () => {
   const [formData, setFormData] = useState({
@@ -59,13 +60,33 @@ const FarmerSignIn = () => {
       .then(result => {
         setUser(result.data.userId)
         setRole('farmer')
-        alert('successfully signIn')
+        toast.success('SignIn Successfully', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
         setTimeout(()=>{
           navigate('/')
         },2000)
       })
       .catch(err => {
-        alert('failed to signIn')
+        toast.error((err.response.data.message || 'Failed to SignUp'), {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
         setErrors(err.message)
       })
     }
@@ -73,6 +94,7 @@ const FarmerSignIn = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           {/* Logo */}
