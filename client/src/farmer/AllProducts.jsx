@@ -179,8 +179,7 @@ const fetchProducts = () => {
                     {product.category.toLowerCase() === 'fruits' ? '🍎' :
                      product.category.toLowerCase() === 'vegetables' ? '🥕' :
                      product.category.toLowerCase() === 'grains' ? '🌾' :
-                     product.category.toLowerCase() === 'pulses' ? '🫘' :
-                     product.category.toLowerCase() === 'spices' ? '🌶️' : '🌱'}
+                     product.category.toLowerCase() === 'dairy' ? '🥛' :'🌱'}
                   </div>
                 </div>
 
