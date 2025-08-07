@@ -133,11 +133,11 @@ const ServeOrder = () => {
                 </button>
               </div>
               
-              <table className="min-w-full border border-slate-300 rounded overflow-hidden">
+              <table className="min-w-full border border-slate-300 rounded overflow-hidden text-center">
                 <thead className="bg-slate-300 text-slate-800">
                   <tr>
-                    <th className="px-4 py-2 text-left border-b">Name</th>
-                    <th className="px-4 py-2 text-left border-b">Quantity</th>
+                    <th className="px-4 py-2 text-center border-b">Name</th>
+                    <th className="px-4 py-2 text-center border-b">Quantity</th>
                   </tr>
                 </thead>
                 <tbody>
