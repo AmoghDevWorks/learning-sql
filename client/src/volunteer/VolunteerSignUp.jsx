@@ -1,5 +1,11 @@
 import React, { useState } from 'react'
 import { User, Mail, Lock, Eye, EyeOff, Phone, MapPinHouse, UserPlus } from 'lucide-react'
+import axios from 'axios'
+import { Bounce, toast, ToastContainer } from 'react-toastify'
+import { useContext } from 'react'
+import roleContext from '../utils/RoleContext'
+import userContext from '../utils/UserContext'
+import { useNavigate } from 'react-router-dom'
 
 const VolunteerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +21,10 @@ const VolunteerSignUp = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { setRole } = useContext(roleContext)
+  const { setUser } = useContext(userContext)
+  const navigate = useNavigate()
 
   const indianDistricts = [
     // Andhra Pradesh
@@ -899,46 +909,45 @@ const VolunteerSignUp = () => {
     }
     
     setIsSubmitting(true)
-    
-    try {
-      // Here you would typically send the data to your backend
-      const response = await fetch('/api/volunteer-signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          location: formData.location,
-          contact: formData.contact
-        })
-      })
-      
-      if (response.ok) {
-        alert('Registration successful! Thank you for volunteering.')
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          location: '',
-          contact: ''
-        })
-      } else {
-        alert('Registration failed. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('An error occurred. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    axios.post('http://localhost:8000/volunteer/signUp',formData)
+    .then(results => {
+      setUser(results.data.userId)
+      setRole('volunteer')
+      toast.success('SignUp Successfully', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setTimeout(()=>{
+        navigate('/')
+      },2000)
+    })
+    .catch(err => {
+      toast.error((err.response.data.message || 'Failed to SignUp'), {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setErrors(err.message)
+    })
+    setIsSubmitting(false)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">

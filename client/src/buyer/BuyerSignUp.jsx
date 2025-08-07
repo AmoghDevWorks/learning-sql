@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, ShoppingCart, UserPlus, MapPinHouse  } from 'lucide-react';
 import axios from 'axios'
 import userContext from '../utils/UserContext'

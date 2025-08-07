@@ -31,6 +31,10 @@ const Navbar = () => {
         { name: 'Order', to:'/viewFarmerProducts'}
     ]
 
+    const volunteerNavItems = [
+        { name: 'Take Delivery', to:'/serveOrder'}
+    ]
+
     const handleModal = () =>{
         if(!isOpenModal){
             setlocalRole(null)
@@ -173,6 +177,17 @@ const Navbar = () => {
                             >
                                 {item.name}
                             </Link>
+                    ))
+                }
+                {role === 'volunteer' && 
+                    volunteerNavItems.map(item => (
+                        <Link
+                            key={item.name}
+                            to={item.to}
+                            className="flex hover:cursor-pointer items-center px-3 py-2 rounded-md text-md font-semibold text-green-100 hover:text-white hover:bg-green-600 transition-colors duration-150"
+                        >
+                            {item.name}
+                        </Link>
                     ))
                 }
             </div>

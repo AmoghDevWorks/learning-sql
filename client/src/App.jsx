@@ -14,6 +14,7 @@ import BuyerSignIn from './buyer/BuyerSignIn'
 import ContactUs from './components/ContactUs'
 import UploadProduct from './farmer/UploadProduct'
 import AllProducts from './farmer/AllProducts'
+import ServeOrder from './volunteer/ServeOrder'
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -87,6 +88,10 @@ const appRouter = createBrowserRouter([
       {
         path:'/volunteerSignIn',
         element:<VolunteerSignIn />
+      },
+      {
+        path:'/serveOrder',
+        element:<ServeOrder />
       }
     ]
   }

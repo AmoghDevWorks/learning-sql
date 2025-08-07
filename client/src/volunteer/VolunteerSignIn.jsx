@@ -1,6 +1,11 @@
 import React, { useState } from 'react'
 import { Mail, Lock, Eye, EyeOff, UserPlus, LogIn } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { useContext } from 'react'
+import userContext from '../utils/UserContext'
+import roleContext from '../utils/RoleContext'
+import { Bounce, toast, ToastContainer } from 'react-toastify'
 
 const VolunteerSignIn = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +16,10 @@ const VolunteerSignIn = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { setUser } = useContext(userContext)
+  const { setRole } = useContext(roleContext)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -52,35 +61,45 @@ const VolunteerSignIn = () => {
     
     setIsSubmitting(true)
     
-    try {
-      // Here you would typically send the data to your backend
-      const response = await fetch('/api/volunteer-signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      })
-      
-      if (response.ok) {
-        alert('Sign in successful! Welcome back.')
-        // Redirect to dashboard or home page
-      } else {
-        alert('Invalid credentials. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('An error occurred. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    axios.post('http://localhost:8000/volunteer/signIn',formData)
+    .then(results => {
+      setUser(results.data.userId)
+      setRole('volunteer')
+      toast.success('SignUp Successfully', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setTimeout(()=>{
+        navigate('/')
+      },2000)
+    })
+    .catch(err => {
+      toast.error((err.response.data.message || 'Failed to SignIn'), {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setErrors(err.message)
+    })
+    setIsSubmitting(false)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
