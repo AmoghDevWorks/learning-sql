@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { X, Sprout,Tractor,Users  } from 'lucide-react';
+import { X, Sprout, Tractor, Users, Bike } from 'lucide-react';
 import userContext from '../utils/UserContext';
 import { Link, useNavigate } from 'react-router-dom'
 import roleContext from '../utils/RoleContext';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { Bounce, toast } from 'react-toastify';
 
 const Navbar = () => {
     const [isOpenModal, setIsOpenModal] = useState(false);
@@ -66,8 +66,10 @@ const Navbar = () => {
 
         if(localRole === 'farmer'){
             navigate('/farmerSignIn')
-        }else{
+        }else if(localRole === 'consumer'){
             navigate('/buyerSignIn')
+        }else{
+            navigate('/volunteerSignIn')
         }
 
         setIsOpenModal(false)
@@ -88,9 +90,9 @@ const Navbar = () => {
                     </div>
 
                     {/* Modal Body (optional) */}
-                    <div className="p-4">
+                    <div className="p-4 mx-2">
                         {/* localRole selection buttons or UI goes here */}
-                        <div className='flex items-center gap-10'>
+                        <div className='flex items-center gap-10 flex-wrap justify-center'>
                             <div
                                 className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${localRole === 'farmer' ? 'border-2 border-green-700' : ''}`}
                                 onClick ={()=>setlocalRole('farmer')}
@@ -104,6 +106,13 @@ const Navbar = () => {
                             >
                                 <Users className='h-20 w-20 text-green-700' />
                                 <p className='text-2xl font-semibold'>Consumer</p>
+                            </div>
+                            <div 
+                                className={`cursor-pointer min-h-40 min-w-40 bg-slate-100 rounded-xl flex items-center justify-center flex-col ${localRole === 'volunteer' ? 'border-2 border-green-700' : ''}`}
+                                onClick={()=>setlocalRole('volunteer')}
+                            >
+                                <Bike  className='h-20 w-20 text-green-700' />
+                                <p className='text-2xl font-semibold'>Volunteer</p>
                             </div>
                         </div>
                     </div>

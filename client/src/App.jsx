@@ -17,6 +17,8 @@ import AllProducts from './farmer/AllProducts'
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import VolunteerSignUp from './volunteer/VolunteerSignUp'
+import VolunteerSignIn from './volunteer/VolunteerSignIn'
 
 const Structure = () =>{
   return (
@@ -77,6 +79,14 @@ const appRouter = createBrowserRouter([
       {
         path:'/allProducts',
         element:<AllProducts />
+      },
+      {
+        path:'/volunteerSignUp',
+        element:<VolunteerSignUp />
+      },
+      {
+        path:'/volunteerSignIn',
+        element:<VolunteerSignIn />
       }
     ]
   }
