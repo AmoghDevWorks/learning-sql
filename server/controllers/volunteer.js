@@ -33,15 +33,52 @@ const signIn = (req,res,next) => {
     })
 }
 
-const getOrderFromLocation = (req,res,next) => {
-    const location = req.query.location
+const getOrderFromLocation = (req, res, next) => {
+  const location = req.query.location;
 
-    pool.query('SELECT orders.* FROM orders JOIN consumer ON orders.consumerId = consumer.id WHERE consumer.location = ? AND deliveryAssigned = ?',[location,false],(err,results)=>{
-        if(err) return res.status(500).json({message:"Internal Server Error"})
+  pool.query(`
+    SELECT 
+      orders.*, 
+      consumer.name AS consumerName, 
+      consumer.contact AS consumerPhone
+    FROM orders 
+    JOIN consumer ON orders.consumerId = consumer.id 
+    WHERE consumer.location = ? AND deliveryAssigned = ?
+  `, [location, false], (err, orders) => {
+    if (err) {
+      return res.status(500).json({ message: "Internal Server Error", details: err });
+    }
 
-        return res.status(200).json(results)
-    })
-}
+    if (orders.length === 0) {
+      return res.status(200).json([]); // No orders found
+    }
+
+    // Convert to promises for order item queries
+    const enrichedOrders = orders.map(order => {
+      return new Promise((resolve, reject) => {
+        pool.query(`
+          SELECT 
+            order_items.quantity, 
+            products.name AS productName 
+          FROM order_items 
+          JOIN products ON order_items.product_id = products.id 
+          WHERE order_items.order_id = ?
+        `, [order.id], (err, items) => {
+          if (err) return reject(err);
+
+          order.details = items; // Add details to order
+          resolve(order);
+        });
+      });
+    });
+
+    // Wait for all nested queries to finish
+    Promise.all(enrichedOrders)
+      .then(results => res.status(200).json(results))
+      .catch(error => res.status(500).json({ message: "Internal Server Error", details: error }));
+  });
+};
+
 
 
 

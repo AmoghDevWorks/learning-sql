@@ -1,39 +1,11 @@
 import React, { useState } from 'react';
 import { Eye, Package, User, Clock, DollarSign } from 'lucide-react';
+import Loader from '../components/Loader';
+import { useEffect } from 'react';
+import axios from 'axios';
 
 const ServeOrder = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      consumerId: 101,
-      orderDate: '2024-08-07 14:30:00',
-      totalRate: 28.50,
-      deliveryAssigned: false,
-      delivered: false,
-      customerName: 'John Smith',
-      customerPhone: '+1 234-567-8900'
-    },
-    {
-      id: 2,
-      consumerId: 102,
-      orderDate: '2024-08-07 14:45:00',
-      totalRate: 15.75,
-      deliveryAssigned: true,
-      delivered: false,
-      customerName: 'Sarah Johnson',
-      customerPhone: '+1 234-567-8901'
-    },
-    {
-      id: 3,
-      consumerId: 103,
-      orderDate: '2024-08-07 15:00:00',
-      totalRate: 22.25,
-      deliveryAssigned: true,
-      delivered: true,
-      customerName: 'Mike Wilson',
-      customerPhone: '+1 234-567-8902'
-    }
-  ]);
+  const [orders, setOrders] = useState();
 
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -57,6 +29,31 @@ const ServeOrder = () => {
     const date = new Date(dateTime);
     return date.toLocaleString();
   };
+
+//   useEffect(()=>{
+//     axios.get('http://localhost:8000/volunteer/')
+//   },[])
+
+  if(!orders){
+    return(
+        <Loader />
+    )
+  }
+
+  if(orders.length === 0){
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="bg-white shadow-md rounded-xl px-8 py-6 text-center border border-gray-300">
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                No Orders Available
+                </h2>
+                <p className="text-sm text-gray-500">
+                There are currently no orders in your district. Please check back later.
+                </p>
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="mx-auto p-6 bg-green-50 min-h-screen">
