@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { Eye, Package, User, Clock, DollarSign } from 'lucide-react';
+import React, { useContext, useState } from 'react';
+import { Eye, Package, User, Clock, IndianRupee, Phone  } from 'lucide-react';
 import Loader from '../components/Loader';
 import { useEffect } from 'react';
 import axios from 'axios';
+import userContext from '../utils/UserContext'
 
 const ServeOrder = () => {
   const [orders, setOrders] = useState();
 
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const { user } = useContext(userContext)
 
   const handleTakeDelivery = (orderId) => {
     setOrders(orders.map(order => 
@@ -18,7 +21,7 @@ const ServeOrder = () => {
   };
 
   const handleViewDetails = (order) => {
-    setSelectedOrder(order);
+    setSelectedOrder(order.details);
   };
 
   const closeModal = () => {
@@ -30,9 +33,16 @@ const ServeOrder = () => {
     return date.toLocaleString();
   };
 
-//   useEffect(()=>{
-//     axios.get('http://localhost:8000/volunteer/')
-//   },[])
+  useEffect(()=>{
+    axios.get(`http://localhost:8000/volunteer/getOrderFromLocation?userId=${user}`)
+    .then(results => {
+      console.log(results.data)
+      setOrders(results.data)
+    })
+    .catch(err => {
+      alert('failed to fetch')
+    })
+  },[])
 
   if(!orders){
     return(
@@ -61,7 +71,7 @@ const ServeOrder = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {orders.map((order) => (
           <div key={order.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
             <div className="p-6">
@@ -71,15 +81,19 @@ const ServeOrder = () => {
                 </h3>
                 <div className="flex items-center text-sm text-gray-600 mb-2">
                   <User className="w-4 h-4 mr-1" />
-                  {order.customerName}
+                  {order.consumerName}
+                </div>
+                <div className="flex items-center text-sm text-gray-600 mb-2">
+                  <Phone className="w-4 h-4 mr-1" />
+                  {order.consumerPhone}
                 </div>
                 <div className="flex items-center text-sm text-gray-600 mb-2">
                   <Clock className="w-4 h-4 mr-2" />
                   {formatDateTime(order.orderDate)}
                 </div>
                 <div className="flex items-center text-lg font-semibold text-gray-900">
-                  <DollarSign className="w-4 h-4 mr-1" />
-                  {order.totalRate.toFixed(2)}
+                  <IndianRupee  className="w-4 h-4 mr-1" />
+                  {Number(order.totalRate).toFixed(2)}
                 </div>
               </div>
 
@@ -119,33 +133,25 @@ const ServeOrder = () => {
                 </button>
               </div>
               
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Order ID</h3>
-                  <p className="text-gray-600">#{selectedOrder.id}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Consumer ID</h3>
-                  <p className="text-gray-600">{selectedOrder.consumerId}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Customer</h3>
-                  <p className="text-gray-600">{selectedOrder.customerName}</p>
-                  <p className="text-gray-600 text-sm">{selectedOrder.customerPhone}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Order Date</h3>
-                  <p className="text-gray-600">{formatDateTime(selectedOrder.orderDate)}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Total Amount</h3>
-                  <p className="text-lg font-bold text-gray-900">${selectedOrder.totalRate.toFixed(2)}</p>
-                </div>
-              </div>
+              <table className="min-w-full border border-slate-300 rounded overflow-hidden">
+                <thead className="bg-slate-300 text-slate-800">
+                  <tr>
+                    <th className="px-4 py-2 text-left border-b">Name</th>
+                    <th className="px-4 py-2 text-left border-b">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedOrder.map((ele, index) => (
+                    <tr
+                      key={index}
+                      className="even:bg-slate-200 odd:bg-white text-gray-800"
+                    >
+                      <td className="px-4 py-2 border-b">{ele.productName}</td>
+                      <td className="px-4 py-2 border-b">{ele.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

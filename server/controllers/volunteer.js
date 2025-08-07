@@ -34,9 +34,15 @@ const signIn = (req,res,next) => {
 }
 
 const getOrderFromLocation = (req, res, next) => {
-  const location = req.query.location;
+  const userId = req.query.userId;
 
-  pool.query(`
+  pool.query('SELECT * FROM volunteer WHERE id = ?',[userId],(err,results)=>{
+    if(err)return res.status(500).json({message:"Internal Server Error",details:err})
+    if(results.length === 0) return res.status(404).json({message:"Invalid User Id"})
+
+    const location = results[0].location
+
+    pool.query(`
     SELECT 
       orders.*, 
       consumer.name AS consumerName, 
@@ -72,11 +78,12 @@ const getOrderFromLocation = (req, res, next) => {
       });
     });
 
-    // Wait for all nested queries to finish
-    Promise.all(enrichedOrders)
-      .then(results => res.status(200).json(results))
-      .catch(error => res.status(500).json({ message: "Internal Server Error", details: error }));
-  });
+      // Wait for all nested queries to finish
+      Promise.all(enrichedOrders)
+        .then(results => res.status(200).json(results))
+        .catch(error => res.status(500).json({ message: "Internal Server Error", details: error }));
+    });
+  })
 };
 
 
