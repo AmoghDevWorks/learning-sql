@@ -1,6 +1,8 @@
 const express  = require('express')
 const pool = require('../config/db')
 
+const transporter = require('../config/nodemailer')
+
 const signUp = (req,res,next) => {
     const { name, email, password, location, contact } = req.body
 
@@ -157,5 +159,8 @@ const deliveredProducts = (req, res, next) => {
   );
 };
 
+const confirmDelivery = (req,res,next) => {
+  
+}
 
-module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts }
+module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts,confirmDelivery }
