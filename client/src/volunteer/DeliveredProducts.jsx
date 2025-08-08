@@ -41,8 +41,9 @@ const DeliveredProducts = () => {
 
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
-    return date.toLocaleString();
-  };
+    return date.getFullYear();
+    };
+
 
   useEffect(()=>{
     axios.get(`http://localhost:8000/volunteer/deliveredProducts?userId=${user}`)
@@ -178,15 +179,15 @@ const DeliveredProducts = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
-                      {order.customerName}
+                      {order.consumerName}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Clock className="w-4 h-4 mr-2" />
-                      Delivered: {formatDateTime(order.deliveredAt)}
+                      Delivered: {formatDateTime(order.orderDate)}
                     </div>
                     <div className="flex items-center text-lg font-semibold text-gray-900">
                       <IndianRupee className="w-4 h-4 mr-1" />
-                      {order.totalRate.toFixed(2)}
+                      {parseFloat(order.totalRate).toFixed(2)}
                     </div>
                   </div>
                   
