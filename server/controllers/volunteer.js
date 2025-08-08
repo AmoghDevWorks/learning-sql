@@ -50,7 +50,7 @@ const getOrderFromLocation = (req, res, next) => {
     FROM orders 
     JOIN consumer ON orders.consumerId = consumer.id 
     WHERE consumer.location = ? AND deliveryAssigned = ?
-  `, [location, false], (err, orders) => {
+  `, [location, -1], (err, orders) => {
     if (err) {
       return res.status(500).json({ message: "Internal Server Error", details: err });
     }
@@ -86,7 +86,29 @@ const getOrderFromLocation = (req, res, next) => {
   })
 };
 
+const takeDelivery = (req,res,next) => {
+  const { orderId,volunteerId } = req.body
+
+  if (!orderId || !volunteerId) {
+    return res.status(400).json({ message: "Missing orderId or volunteerId" });
+  }
+
+  pool.query('SELECT * FROM orders WHERE deliveryAssigned = ? AND delivered = ?',[volunteerId,false],(err,results)=>{
+    if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+
+
+    if(results.length > 0) return res.status(403).json({message:"Complete your current delivery task"})
+
+    pool.query('UPDATE orders SET deliveryAssigned = ? WHERE id = ? AND deliveryAssigned = -1',[volunteerId,orderId],(err,results)=>{
+      if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+
+      if(results.affectedRows === 0) return res.status(404).json({message:"Failed to perform the operation"})
+
+      return res.status(200).json({message:"Delivery confirmed"})
+    })
+  })
+}
 
 
 
-module.exports = { signUp,signIn,getOrderFromLocation }
+module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery }

@@ -4,6 +4,8 @@ import Loader from '../components/Loader';
 import { useEffect } from 'react';
 import axios from 'axios';
 import userContext from '../utils/UserContext'
+import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const ServeOrder = () => {
   const [orders, setOrders] = useState();
@@ -11,13 +13,42 @@ const ServeOrder = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const { user } = useContext(userContext)
+  const navigate = useNavigate()
 
   const handleTakeDelivery = (orderId) => {
-    setOrders(orders.map(order => 
-      order.id === orderId 
-        ? { ...order, deliveryAssigned: true }
-        : order
-    ));
+    axios.post(`http://localhost:8000/volunteer/takeDelivery`,{
+      orderId:orderId,
+      volunteerId:user
+    })
+    .then(results => {
+      toast.success('Successfully took up the delivery', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      setTimeout(() => {
+        navigate('/')
+      }, 2000);
+    })
+    .catch(err => {
+      toast.error((err.response.data.message || 'Failed to confirm the delivery'), {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+    })
   };
 
   const handleViewDetails = (order) => {
@@ -67,6 +98,7 @@ const ServeOrder = () => {
 
   return (
     <div className="mx-auto p-6 bg-green-50 min-h-screen">
+      <ToastContainer />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
       </div>

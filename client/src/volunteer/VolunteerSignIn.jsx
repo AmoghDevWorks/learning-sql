@@ -92,7 +92,7 @@ const VolunteerSignIn = () => {
         theme: "light",
         transition: Bounce,
       });
-      setErrors(err.message)
+      setErrors(err.response.data.message)
     })
     setIsSubmitting(false)
   }
