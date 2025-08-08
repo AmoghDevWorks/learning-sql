@@ -1,61 +1,20 @@
 import React, { useState } from 'react';
-import { Package, Clock, User, DollarSign, MapPin, CheckCircle, Eye } from 'lucide-react';
+import { Package, Clock, User, MapPin, CheckCircle, Eye, IndianRupee, Phone } from 'lucide-react';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { useContext } from 'react';
+import userContext from '../utils/UserContext';
+import Loader from '../components/Loader';
 
 const DeliveredProducts = () => {
   // Sample data - replace with actual API calls
-  const [currentDelivery, setCurrentDelivery] = useState({
-    id: 5,
-    consumerId: 105,
-    orderDate: '2024-08-08 16:20:00',
-    totalRate: 32.50,
-    deliveryAssigned: true,
-    delivered: false,
-    customerName: 'Emma Davis',
-    customerPhone: '+1 234-567-8905',
-    address: '789 Oak Street, Apt 2B, New York, NY 10001',
-    assignedAt: '2024-08-08 16:25:00'
-  });
+  const [currentDelivery, setCurrentDelivery] = useState(null);
 
-  const [previousDeliveries, setPreviousDeliveries] = useState([
-    {
-      id: 4,
-      consumerId: 104,
-      orderDate: '2024-08-08 14:15:00',
-      totalRate: 45.75,
-      deliveryAssigned: true,
-      delivered: true,
-      customerName: 'Robert Smith',
-      customerPhone: '+1 234-567-8904',
-      address: '456 Pine Ave, Suite 12, Brooklyn, NY 11201',
-      deliveredAt: '2024-08-08 15:30:00'
-    },
-    {
-      id: 3,
-      consumerId: 103,
-      orderDate: '2024-08-08 12:30:00',
-      totalRate: 22.25,
-      deliveryAssigned: true,
-      delivered: true,
-      customerName: 'Lisa Johnson',
-      customerPhone: '+1 234-567-8903',
-      address: '123 Main St, Unit 5A, Queens, NY 11375',
-      deliveredAt: '2024-08-08 13:45:00'
-    },
-    {
-      id: 2,
-      consumerId: 102,
-      orderDate: '2024-08-07 18:20:00',
-      totalRate: 38.90,
-      deliveryAssigned: true,
-      delivered: true,
-      customerName: 'Michael Brown',
-      customerPhone: '+1 234-567-8902',
-      address: '321 Elm Street, Floor 3, Manhattan, NY 10002',
-      deliveredAt: '2024-08-07 19:15:00'
-    }
-  ]);
+  const [previousDeliveries, setPreviousDeliveries] = useState(null);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const { user } = useContext(userContext)
 
   const handleMarkDelivered = () => {
     // Mark current delivery as completed
@@ -85,8 +44,30 @@ const DeliveredProducts = () => {
     return date.toLocaleString();
   };
 
+  useEffect(()=>{
+    axios.get(`http://localhost:8000/volunteer/deliveredProducts?userId=${user}`)
+    .then(results => {
+        const data = results.data
+        
+        if(data.length > 0){
+            if(data[0].delivered === 0){
+                setCurrentDelivery(data[0])
+                const updatedData = data.slice(1)
+                console.log(updatedData)
+                setPreviousDeliveries(updatedData)
+            }else{
+                setPreviousDeliveries(data)
+            }
+        }
+    })
+  },[])
+
+  if(!previousDeliveries){
+    return <Loader />
+  }
+
   return (
-    <div className="w-screen mx-auto p-6 bg-green-50 min-h-screen">
+    <div className="max-w-screen mx-auto p-6 bg-green-50 min-h-screen">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">My Deliveries</h1>
         <p className="text-gray-600">Track your current and completed deliveries</p>
@@ -108,7 +89,7 @@ const DeliveredProducts = () => {
                   Out for Delivery
                 </span>
                 <span className="text-sm text-green-600">
-                  Assigned: {formatDateTime(currentDelivery.assignedAt)}
+                  Assigned: {formatDateTime(currentDelivery.orderDate)}
                 </span>
               </div>
             </div>
@@ -123,15 +104,15 @@ const DeliveredProducts = () => {
                   <div className="space-y-2">
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
-                      {currentDelivery.customerName}
+                      {currentDelivery.consumerName}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Clock className="w-4 h-4 mr-2" />
                       {formatDateTime(currentDelivery.orderDate)}
                     </div>
                     <div className="flex items-center text-lg font-semibold text-gray-900">
-                      <DollarSign className="w-4 h-4 mr-1" />
-                      {currentDelivery.totalRate.toFixed(2)}
+                      <IndianRupee className="w-4 h-4 mr-1" />
+                      {parseFloat(currentDelivery.totalRate).toFixed(2)}
                     </div>
                   </div>
                 </div>
@@ -139,8 +120,8 @@ const DeliveredProducts = () => {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Delivery Address</h4>
                   <div className="flex items-start text-sm text-gray-600 mb-4">
-                    <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>{currentDelivery.address}</span>
+                    <Phone className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>{currentDelivery.consumerPhone}</span>
                   </div>
                   
                   <div className="flex gap-2">
@@ -204,7 +185,7 @@ const DeliveredProducts = () => {
                       Delivered: {formatDateTime(order.deliveredAt)}
                     </div>
                     <div className="flex items-center text-lg font-semibold text-gray-900">
-                      <DollarSign className="w-4 h-4 mr-1" />
+                      <IndianRupee className="w-4 h-4 mr-1" />
                       {order.totalRate.toFixed(2)}
                     </div>
                   </div>
@@ -243,41 +224,27 @@ const DeliveredProducts = () => {
                   ×
                 </button>
               </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Order ID</h3>
-                  <p className="text-gray-600">#{selectedOrder.id}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Customer</h3>
-                  <p className="text-gray-600">{selectedOrder.customerName}</p>
-                  <p className="text-gray-600 text-sm">{selectedOrder.customerPhone}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Delivery Address</h3>
-                  <p className="text-gray-600">{selectedOrder.address}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Order Date</h3>
-                  <p className="text-gray-600">{formatDateTime(selectedOrder.orderDate)}</p>
-                </div>
-                
-                {selectedOrder.deliveredAt && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Delivered At</h3>
-                    <p className="text-gray-600">{formatDateTime(selectedOrder.deliveredAt)}</p>
-                  </div>
-                )}
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Total Amount</h3>
-                  <p className="text-lg font-bold text-gray-900">${selectedOrder.totalRate.toFixed(2)}</p>
-                </div>
-              </div>
+
+              {/* table section */}
+              <table className="min-w-full border border-slate-300 rounded overflow-hidden text-center">
+                <thead className="bg-slate-300 text-slate-800">
+                  <tr>
+                    <th className="px-4 py-2 text-center border-b">Name</th>
+                    <th className="px-4 py-2 text-center border-b">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedOrder.details.map((ele, index) => (
+                    <tr
+                      key={index}
+                      className="even:bg-slate-200 odd:bg-white text-gray-800"
+                    >
+                      <td className="px-4 py-2 border-b">{ele.productName}</td>
+                      <td className="px-4 py-2 border-b">{ele.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
