@@ -41,9 +41,8 @@ const DeliveredProducts = () => {
 
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
-    return date.getFullYear();
-    };
-
+    return date.toLocaleString();
+  };
 
   useEffect(()=>{
     axios.get(`http://localhost:8000/volunteer/deliveredProducts?userId=${user}`)
