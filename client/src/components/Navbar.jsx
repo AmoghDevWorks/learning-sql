@@ -32,7 +32,8 @@ const Navbar = () => {
     ]
 
     const volunteerNavItems = [
-        { name: 'Take Delivery', to:'/serveOrder'}
+        { name: 'Take Delivery', to:'/serveOrder'},
+        { name: 'Delivered Products' , to:'/deliveredProducts'}
     ]
 
     const handleModal = () =>{

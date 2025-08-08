@@ -109,6 +109,53 @@ const takeDelivery = (req,res,next) => {
   })
 }
 
+const deliveredProducts = (req, res, next) => {
+  const volunteerId = req.query.userId;
+
+  if (!volunteerId) return res.status(404).json({ message: "Volunteer Id not found" });
+
+  pool.query(
+    `SELECT 
+      orders.*,
+      consumer.name AS consumerName,
+      consumer.contact AS consumerPhone
+    FROM orders
+    JOIN consumer ON consumer.id = orders.consumerId
+    WHERE orders.deliveryAssigned = ?
+    ORDER BY orders.orderDate ASC`,
+    [volunteerId],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: "Internal Server Error" });
+
+      const enrichedOrders = results.map(order => {
+        return new Promise((resolve, reject) => {
+          pool.query(
+            `SELECT 
+              order_items.quantity,
+              products.name AS productName
+            FROM order_items
+            JOIN products ON products.id = order_items.product_id
+            WHERE order_items.order_id = ?`,
+            [order.id],
+            (err, items) => {
+              if (err) reject(err);
+
+              // Add details
+              order.details = items;
+
+              // consumerName and consumerPhone already in order from parent query
+              resolve(order);
+            }
+          );
+        });
+      });
+
+      Promise.all(enrichedOrders)
+        .then(results => res.status(200).json(results))
+        .catch(error => res.status(500).json({ message: "Internal Server Error", details: error }));
+    }
+  );
+};
 
 
-module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery }
+module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts }
