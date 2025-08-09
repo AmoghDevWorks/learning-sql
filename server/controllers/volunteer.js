@@ -168,8 +168,8 @@ function createOrderEmail(consumerName, id, otp, details) {
   
   const rows = details.map(d => `
     <tr>
-      <td style="border: 1px solid #ddd; padding: 8px;">${d.item}</td>
-      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${d.qty}</td>
+      <td style="border: 1px solid #ddd; padding: 8px;">${d.productName}</td>
+      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${d.quantity}</td>
     </tr>
   `).join('');
 
