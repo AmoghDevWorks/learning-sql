@@ -3,6 +3,7 @@ const pool = require('../config/db')
 
 const transporter = require('../config/nodemailer')
 const redisClient = require('../config/redis')
+const client = require('../config/redis')
 
 const signUp = (req,res,next) => {
     const { name, email, password, location, contact } = req.body
@@ -121,7 +122,8 @@ const deliveredProducts = (req, res, next) => {
     `SELECT 
       orders.*,
       consumer.name AS consumerName,
-      consumer.contact AS consumerPhone
+      consumer.contact AS consumerPhone,
+      consumer.email AS consumerEmail
     FROM orders
     JOIN consumer ON consumer.id = orders.consumerId
     WHERE orders.deliveryAssigned = ?
@@ -160,10 +162,71 @@ const deliveredProducts = (req, res, next) => {
   );
 };
 
+// email format
+function createOrderEmail(consumerName, id, otp, details) {
+  // details = array of objects, e.g. [{ item: 'Apple', qty: 3 }, { item: 'Banana', qty: 2 }]
+  
+  const rows = details.map(d => `
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 8px;">${d.item}</td>
+      <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${d.qty}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <p>Respected <b>${consumerName}</b>,</p>
+    <p>Your OTP for order <b>#${id}</b> is <b>${otp}</b>.</p>
+    <p>Order details:</p>
+    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <thead>
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+    <p>Thank you for your order!</p>
+  `;
+}
+
 const confirmDelivery = (req,res,next) => {
   //have to look into database may be radix to keep track of the otp thing for some 5-10 minutes only connected to frontend page->deliveredProducts.jsx
-  
+  const OTP = Math.floor(100000 + Math.random() * 900000).toString();
 
+  const { id, consumerEmail, details, consumerName } = req.body
+
+  if( !id || !consumerEmail || !details ) return res.status(404).json({message:"Unable to find the required fields"})
+
+  client.get(`order:${id}`)
+  .then(isPresent => {
+    if(isPresent) return res.status(404).json({message:"Recent OTP is still valid"})
+
+    const htmlContent = createOrderEmail(consumerName, id, OTP, details)
+
+    const mailOptions = {
+      from:'FarmTracker',
+      to: consumerEmail,
+      subject: `OTP for order:${id}`,
+      html: htmlContent
+    }
+
+    return transporter.sendMail(mailOptions)
+    .then(()=>{
+      return client.set(`order:${id}`,OTP,'EX', 300)
+    })
+    .then(()=>{
+      return res.status(200).json({message:"OTP sent successfully"})
+    })
+    .catch((e)=>{
+      return res.status(500).json({message:"Failed to send the OTP",details:e})
+    })
+  })
+  .catch(e => {
+    return res.status(500).json({message:"Internal Server Error"})
+  })
 }
 
 module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts,confirmDelivery }

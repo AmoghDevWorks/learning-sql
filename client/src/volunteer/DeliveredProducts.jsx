@@ -13,22 +13,20 @@ const DeliveredProducts = () => {
   const [previousDeliveries, setPreviousDeliveries] = useState(null);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [optModal, setOtpModal] = useState(null)
 
   const { user } = useContext(userContext)
 
   const handleMarkDelivered = () => {
-    // Mark current delivery as completed
-    const deliveredOrder = {
-      ...currentDelivery,
-      delivered: true,
-      deliveredAt: new Date().toISOString().replace('T', ' ').substring(0, 19)
-    };
-    
-    // Add to previous deliveries
-    setPreviousDeliveries([deliveredOrder, ...previousDeliveries]);
-    
-    // Clear current delivery
-    setCurrentDelivery(null);
+    axios.post('http://localhost:8000/volunteer/confirmDelivery',currentDelivery)
+    .then(()=>{
+      setOtpModal(true)
+      alert('OTP sent successfully')
+    })
+    .catch(()=>{
+      alert('failed to generate otp')
+      setOtpModal(false)
+    })
   };
 
   const handleViewDetails = (order) => {
@@ -53,7 +51,6 @@ const DeliveredProducts = () => {
             if(data[0].delivered === 0){
                 setCurrentDelivery(data[0])
                 const updatedData = data.slice(1)
-                console.log(updatedData)
                 setPreviousDeliveries(updatedData)
             }else{
                 setPreviousDeliveries(data)
@@ -245,6 +242,30 @@ const DeliveredProducts = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+      {optModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-96 overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Enter the OTP</h2>
+                <button
+                  onClick={()=>{setOtpModal(null)}}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* table section */}
+              <input 
+                placeholder='Enter the OTP'
+                className='h-6 w-full '
+              />
+
             </div>
           </div>
         </div>
