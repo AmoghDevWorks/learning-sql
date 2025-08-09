@@ -21,6 +21,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import VolunteerSignUp from './volunteer/VolunteerSignUp'
 import VolunteerSignIn from './volunteer/VolunteerSignIn'
 import DeliveredProducts from './volunteer/DeliveredProducts'
+import ConsumerPreviousOrders from './buyer/ConsumerPreviousOrders'
 
 const Structure = () =>{
   return (
@@ -97,6 +98,10 @@ const appRouter = createBrowserRouter([
       {
         path:'/deliveredProducts',
         element:<DeliveredProducts />
+      },
+      {
+        path:"/consumer/previousOrders",
+        element:<ConsumerPreviousOrders />
       }
     ]
   }

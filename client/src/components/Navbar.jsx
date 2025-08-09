@@ -28,7 +28,8 @@ const Navbar = () => {
     ]
 
     const consumerNavItems = [
-        { name: 'Order', to:'/viewFarmerProducts'}
+        { name: 'Order', to:'/viewFarmerProducts'},
+        { name: 'Previous Orders', to:'/consumer/previousOrders'}
     ]
 
     const volunteerNavItems = [
