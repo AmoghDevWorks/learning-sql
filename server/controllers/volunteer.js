@@ -3,7 +3,6 @@ const pool = require('../config/db')
 
 const transporter = require('../config/nodemailer')
 const redisClient = require('../config/redis')
-const client = require('../config/redis')
 
 const signUp = (req,res,next) => {
     const { name, email, password, location, contact } = req.body
@@ -193,14 +192,13 @@ function createOrderEmail(consumerName, id, otp, details) {
 }
 
 const confirmDelivery = (req,res,next) => {
-  //have to look into database may be radix to keep track of the otp thing for some 5-10 minutes only connected to frontend page->deliveredProducts.jsx
   const OTP = Math.floor(100000 + Math.random() * 900000).toString();
 
   const { id, consumerEmail, details, consumerName } = req.body
 
   if( !id || !consumerEmail || !details ) return res.status(404).json({message:"Unable to find the required fields"})
 
-  client.get(`order:${id}`)
+  redisClient.get(`order:${id}`)
   .then(isPresent => {
     if(isPresent) return res.status(404).json({message:"Recent OTP is still valid"})
 
@@ -215,7 +213,7 @@ const confirmDelivery = (req,res,next) => {
 
     return transporter.sendMail(mailOptions)
     .then(()=>{
-      return client.set(`order:${id}`,OTP,'EX', 300)
+      return redisClient.set(`order:${id}`, OTP, 'EX', 300)
     })
     .then(()=>{
       return res.status(200).json({message:"OTP sent successfully"})
@@ -225,8 +223,41 @@ const confirmDelivery = (req,res,next) => {
     })
   })
   .catch(e => {
-    return res.status(500).json({message:"Internal Server Error"})
+    return res.status(500).json({message:"Internal Server Error",details:e})
   })
 }
 
-module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts,confirmDelivery }
+const confirmOTP = (req,res,next) => {
+  const orderId = req.query.id
+  const userOTP = req.body.userOtp
+
+  if(!orderId) return res.status(404).json({message:"Unable to find the order ID"})
+  if(!userOTP) return res.status(404).json({message:"Enter the OTP"})
+
+  //1. fetch that order id from redis 2.check validity of otp 3.not valid then get out 4. if valid then mark that order.delivered = true 
+  redisClient.get(`order:${orderId}`)
+  .then(otp => {
+    if(!otp) return res.status(404).json({message:`OTP for the orderId:${orderId} not found`})
+    
+    if(otp !== userOTP) return res.status(404).json({message:"Invalid OTP"})
+
+    pool.query('UPDATE orders SET delivered = true WHERE id = ?',[orderId],(err,results)=>{
+      if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+
+      if(results.affectedRows === 0) return res.status(500).json({message:"Failed to update the data"})
+
+      redisClient.del(`order:${orderId}`)
+      .then(()=>{
+        return res.status(200).json({message:"Order Delivered Successfully"})
+      })
+      .catch((err)=>{
+        return res.status(500).json({message:"Internal Server Error",details:err})
+      })
+    })
+  })
+  .catch(err => {
+    return res.status(500).json({message:"Internal Server Error",details:err})
+  })
+}
+
+module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts,confirmDelivery,confirmOTP }

@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useContext } from 'react';
 import userContext from '../utils/UserContext';
 import Loader from '../components/Loader';
+import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
 
 const DeliveredProducts = () => {
   // Sample data - replace with actual API calls
@@ -14,8 +16,10 @@ const DeliveredProducts = () => {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [optModal, setOtpModal] = useState(null)
+  const otpRef = useRef(null)
 
   const { user } = useContext(userContext)
+  const navigate = useNavigate()
 
   const handleMarkDelivered = () => {
     axios.post('http://localhost:8000/volunteer/confirmDelivery',currentDelivery)
@@ -23,8 +27,9 @@ const DeliveredProducts = () => {
       setOtpModal(true)
       alert('OTP sent successfully')
     })
-    .catch(()=>{
+    .catch((e)=>{
       alert('failed to generate otp')
+      console.log(e)
       setOtpModal(false)
     })
   };
@@ -36,6 +41,22 @@ const DeliveredProducts = () => {
   const closeModal = () => {
     setSelectedOrder(null);
   };
+
+  const confirmOTP = () => {
+    const userOtp = otpRef.current.value
+
+    axios.post(`http://localhost:8000/volunteer/confirmOTP?id=${currentDelivery.id}`,{
+      userOtp:userOtp
+    })
+    .then(res => {
+      alert(res.data.message || 'Delivery Successfull')
+      navigate('/serveOrder')
+    })
+    .catch(res => {
+      console.log(res)
+      alert('failed')
+    })
+  }
 
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
@@ -263,9 +284,16 @@ const DeliveredProducts = () => {
               {/* table section */}
               <input 
                 placeholder='Enter the OTP'
-                className='h-6 w-full '
+                className='h-6 w-full px-4 py-6 border border-slate-800 rounded-lg'
+                required
+                ref={otpRef}
               />
-
+              <button
+                className='text-white bg-green-600 px-6 py-3 my-4 mx-auto text-lg font-semibold rounded-lg'
+                onClick={confirmOTP}
+              >
+                Confirm
+              </button>
             </div>
           </div>
         </div>
