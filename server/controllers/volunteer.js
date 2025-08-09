@@ -2,6 +2,7 @@ const express  = require('express')
 const pool = require('../config/db')
 
 const transporter = require('../config/nodemailer')
+const redisClient = require('../config/redis')
 
 const signUp = (req,res,next) => {
     const { name, email, password, location, contact } = req.body
@@ -160,7 +161,9 @@ const deliveredProducts = (req, res, next) => {
 };
 
 const confirmDelivery = (req,res,next) => {
+  //have to look into database may be radix to keep track of the otp thing for some 5-10 minutes only connected to frontend page->deliveredProducts.jsx
   
+
 }
 
 module.exports = { signUp,signIn,getOrderFromLocation,takeDelivery,deliveredProducts,confirmDelivery }
