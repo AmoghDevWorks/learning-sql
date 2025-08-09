@@ -166,20 +166,22 @@ const ServeOrder = () => {
               </div>
               
               <table className="min-w-full border border-slate-300 rounded overflow-hidden text-center">
-                <thead className="bg-slate-300 text-slate-800">
+                <thead className="bg-green-400 text-slate-800">
                   <tr>
                     <th className="px-4 py-2 text-center border-b">Name</th>
                     <th className="px-4 py-2 text-center border-b">Quantity</th>
+                    <th className="px-4 py-2 text-center border-b">Contact</th>
                   </tr>
                 </thead>
                 <tbody>
                   {selectedOrder.map((ele, index) => (
                     <tr
                       key={index}
-                      className="even:bg-slate-200 odd:bg-white text-gray-800"
+                      className="even:bg-green-200 odd:bg-white text-gray-800"
                     >
                       <td className="px-4 py-2 border-b">{ele.productName}</td>
                       <td className="px-4 py-2 border-b">{ele.quantity}</td>
+                      <td className="px-4 py-2 border-b">{ele.farmerContact}</td>
                     </tr>
                   ))}
                 </tbody>

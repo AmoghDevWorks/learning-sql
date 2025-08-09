@@ -68,9 +68,11 @@ const getOrderFromLocation = (req, res, next) => {
         pool.query(`
           SELECT 
             order_items.quantity, 
-            products.name AS productName 
+            products.name AS productName,
+            farmer.contact AS farmerContact
           FROM order_items 
           JOIN products ON order_items.product_id = products.id 
+          JOIN farmer ON farmer.id = products.farmerId
           WHERE order_items.order_id = ?
         `, [order.id], (err, items) => {
           if (err) return reject(err);
@@ -83,7 +85,7 @@ const getOrderFromLocation = (req, res, next) => {
 
       // Wait for all nested queries to finish
       Promise.all(enrichedOrders)
-        .then(results => res.status(200).json(results))
+        .then(enriched => res.status(200).json(enriched))
         .catch(error => res.status(500).json({ message: "Internal Server Error", details: error }));
     });
   })
@@ -136,9 +138,11 @@ const deliveredProducts = (req, res, next) => {
           pool.query(
             `SELECT 
               order_items.quantity,
-              products.name AS productName
+              products.name AS productName,
+              farmer.contact AS farmerContact
             FROM order_items
             JOIN products ON products.id = order_items.product_id
+            JOIN farmer ON products.farmerId = farmer.id
             WHERE order_items.order_id = ?`,
             [order.id],
             (err, items) => {
@@ -155,7 +159,7 @@ const deliveredProducts = (req, res, next) => {
       });
 
       Promise.all(enrichedOrders)
-        .then(results => res.status(200).json(results))
+        .then(enriched => res.status(200).json(enriched))
         .catch(error => res.status(500).json({ message: "Internal Server Error", details: error }));
     }
   );
