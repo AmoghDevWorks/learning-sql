@@ -67,16 +67,9 @@ const DeliveredProducts = () => {
     axios.get(`http://localhost:8000/volunteer/deliveredProducts?userId=${user}`)
     .then(results => {
         const data = results.data
-        
-        if(data.length > 0){
-            if(data[0].delivered === 0){
-                setCurrentDelivery(data[0])
-                const updatedData = data.slice(1)
-                setPreviousDeliveries(updatedData)
-            }else{
-                setPreviousDeliveries(data)
-            }
-        }
+        const temp = data.filter(d => d.delivered === 0)
+        if(temp.length !==0) setCurrentDelivery(temp[0])
+        setPreviousDeliveries(data.filter(d => d.delivered === 1))
     })
   },[])
 

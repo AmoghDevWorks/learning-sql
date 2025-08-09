@@ -1,103 +1,72 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { CheckCircle, XCircle, Eye } from 'lucide-react'
+import userContext from '../utils/UserContext'
+import axios from 'axios'
 
 const ConsumerPreviousOrders = () => {
   const [activeTab, setActiveTab] = useState('current')
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   // Mock data for orders
-  const currentOrders = [
-    {
-      id: 'ORD-001',
-      date: '2024-08-07',
-      status: 'pending',
-      items: [
-        { name: 'Organic Tomatoes', quantity: 2, price: 12.99, image: '🍅' },
-        { name: 'Fresh Basil', quantity: 1, price: 4.50, image: '🌿' }
-      ],
-      total: 17.49,
-      farmer: 'Green Valley Farm'
-    },
-    {
-      id: 'ORD-002',
-      date: '2024-08-08',
-      status: 'pending',
-      items: [
-        { name: 'Free Range Eggs', quantity: 1, price: 8.99, image: '🥚' },
-        { name: 'Artisan Bread', quantity: 1, price: 6.50, image: '🍞' }
-      ],
-      total: 15.49,
-      farmer: 'Sunrise Farm'
-    }
-  ]
+  const [ currentOrders,setCurrentOrders ] = useState([])
+  const [ previousOrders,setPreviousOrders ] = useState([])
 
-  const previousOrders = [
-    {
-      id: 'ORD-098',
-      date: '2024-07-25',
-      status: 'delivered',
-      items: [
-        { name: 'Organic Apples', quantity: 3, price: 9.99, image: '🍎' },
-        { name: 'Local Honey', quantity: 1, price: 12.00, image: '🍯' }
-      ],
-      total: 21.99,
-      deliveredDate: '2024-07-28',
-      farmer: 'Orchard Fresh Farm'
-    },
-    {
-      id: 'ORD-097',
-      date: '2024-07-20',
-      status: 'delivered',
-      items: [
-        { name: 'Seasonal Vegetables', quantity: 1, price: 15.99, image: '🥕' },
-        { name: 'Fresh Herbs Bundle', quantity: 1, price: 7.50, image: '🌿' }
-      ],
-      total: 23.49,
-      deliveredDate: '2024-07-22',
-      farmer: 'Farm Direct Co'
-    },
-    {
-      id: 'ORD-096',
-      date: '2024-07-15',
-      status: 'cancelled',
-      items: [
-        { name: 'Organic Milk', quantity: 2, price: 8.99, image: '🥛' }
-      ],
-      total: 17.98,
-      farmer: 'Dairy Fresh Farm'
-    }
-  ]
+  const { user } = useContext(userContext)
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
-      case 'delivered': return 'bg-green-50 text-green-700 border-green-200'
+  const getStatusColor = (deliveryAssigned, delivered) => {
+    if (delivered) {
+        return {
+        content: 'Delivered',
+        css: 'bg-green-50 text-green-700 border border-green-200'
+        };
+    } else if (deliveryAssigned === -1) {
+        return {
+        content: 'Pending',
+        css: 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+        };
+    } else {
+        return {
+        content: 'Out for delivery',
+        css: 'bg-blue-50 text-blue-700 border border-blue-200'
+        };
     }
-  }
+  };
+
+
+  useEffect(()=>{
+    axios.get(`http://localhost:8000/consumer/previousAndCurrentOrders?userId=${user}`)
+    .then(results => {
+        console.log(results)
+        setCurrentOrders(results.data.filter(order => order.delivered === 0))
+        setPreviousOrders(results.data.filter(order => order.delivered === 1))
+    })
+    .catch(err => {
+        alert('failed to fetch')
+    })
+  },[])
 
   const OrderCard = ({ order }) => (
     <div className="bg-white rounded-lg border border-green-200 p-6">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="font-semibold text-lg text-black">Order {order.id}</h3>
-          <p className="text-sm text-slate-950">From {order.farmer}</p>
-          <p className="text-sm text-slate-950">Placed on {new Date(order.date).toLocaleDateString()}</p>
+          <h3 className="font-semibold text-lg text-black">Order #{order.id}</h3>
+          <p className="text-sm text-slate-950">Placed on {new Date(order.orderDate).toLocaleDateString()}</p>
         </div>
         <div className="text-right">
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border mb-2 bg-green-50 text-green-700 border-green-200`}>
-            {order.status === 'delivered' && <CheckCircle className="w-4 h-4 mr-2" />}
-            <span className="capitalize">{order.status}</span>
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border mb-2 ${getStatusColor(order.deliveryAssigned,order.delivered).css}`}>
+            {order.delivered === 1 && <CheckCircle className="w-4 h-4 mr-2" />}
+            <span className="capitalize">{getStatusColor(order.deliveryAssigned,order.delivered).content}</span>
           </div>
-          <p className="font-bold text-lg text-slate-900">${order.total.toFixed(2)}</p>
+          <p className="font-bold text-lg text-slate-900">₹{parseFloat(order.totalRate).toFixed(2)}</p>
         </div>
       </div>
 
       <div className="border-t border-green-200 pt-4 mt-4 flex justify-between items-center">
         <div className="text-sm text-slate-6600">
-          {order.status === 'delivered' && order.deliveredDate && (
-            <p>Delivered on {new Date(order.deliveredDate).toLocaleDateString()}</p>
+          {order.delivered === 1 && order.orderDate && (
+            <p>Delivered on {new Date(order.orderDate).toLocaleDateString()}</p>
           )}
-          <p>{order.items.length} item{order.items.length > 1 ? 's' : ''} ordered</p>
+          <p>{order.details.length} item{order.details.length > 1 ? 's' : ''} ordered</p>
         </div>
         <button
           onClick={() => setSelectedOrder(order)}
@@ -120,7 +89,6 @@ const ConsumerPreviousOrders = () => {
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-bold text-black">Order {order.id}</h2>
-                <p className="text-slate-800">From {order.farmer}</p>
               </div>
               <button
                 onClick={onClose}
@@ -135,46 +103,51 @@ const ConsumerPreviousOrders = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <h3 className="font-semibold text-black mb-2">Order Status</h3>
-                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border bg-green-50 text-green-700 border-green-200`}>
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border bg-green-50 text-green-700 border-green-200 ${getStatusColor(order.deliveryAssigned,order.delivered).css}`}>
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  <span className="capitalize">{order.status}</span>
+                  <span className="capitalize">{getStatusColor(order.deliveryAssigned,order.delivered).content}</span>
                 </div>
               </div>
               <div>
                 <h3 className="font-semibold text-black mb-2">Order Date</h3>
-                <p className="text-slate-700">{new Date(order.date).toLocaleDateString()}</p>
+                <p className="text-slate-700">{new Date(order.orderDate).toLocaleDateString()}</p>
               </div>
             </div>
 
             <div className="mb-6">
               <h3 className="font-semibold text-green-900 mb-4">Items Ordered</h3>
-              <div className="space-y-4">
-                {order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex items-center space-x-4">
-                      <span className="text-3xl">{item.image}</span>
-                      <div>
-                        <p className="font-medium text-green-900">{item.name}</p>
-                        <p className="text-sm text-green-700">Quantity: {item.quantity}</p>
-                      </div>
-                    </div>
-                    <p className="font-semibold text-green-900">₹{item.price.toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
+              <table className="min-w-full border border-slate-300 rounded overflow-hidden text-center">
+                <thead className="bg-green-400 text-slate-800">
+                  <tr>
+                    <th className="px-4 py-2 text-center border-b">Name</th>
+                    <th className="px-4 py-2 text-center border-b">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.details.map((ele, index) => (
+                    <tr
+                      key={index}
+                      className="even:bg-green-200 odd:bg-white text-gray-800"
+                    >
+                      <td className="px-4 py-2 border-b">{ele.productName}</td>
+                      <td className="px-4 py-2 border-b">{ele.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <div className="border-t border-green-200 pt-4">
               <div className="flex justify-between items-center text-lg font-bold text-green-900">
                 <span>Total Amount:</span>
-                <span>₹{order.total.toFixed(2)}</span>
+                <span>₹{parseFloat(order.totalRate).toFixed(2)}</span>
               </div>
             </div>
 
-            {order.status === 'delivered' && (
+            {order.delivered === 1 && (
               <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
                 <p className="text-green-800 font-medium">
-                  ✅ Delivered on {new Date(order.deliveredDate).toLocaleDateString()}
+                  ✅ Delivered on {new Date(order.orderDate).toLocaleDateString()}
                 </p>
               </div>
             )}

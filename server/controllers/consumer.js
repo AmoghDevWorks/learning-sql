@@ -154,5 +154,42 @@ const orderProduct = (req, res) => {
   });
 };
 
+const previousAndCurrentOrders = (req,res,next) => {
+  const consumerId = req.query.userId
 
-module.exports = { signUp, signIn, allProducts, orderProduct }
+  if(!consumerId) return res.status(404).json({message:'Login required'})
+
+  pool.query('SELECT * FROM orders WHERE consumerId = ?',[consumerId],(err,results)=>{
+    if(err) return res.status(500).json({message:"Internal Server Error",details:err})
+
+    const enrichedOrders = results.map(order => {
+      return new Promise((resolve,reject) => {
+        pool.query(
+          `SELECT 
+            order_items.quantity,
+            products.name as productName
+            FROM order_items
+            JOIN products ON order_items.product_id = products.id
+            WHERE order_items.order_id = ?
+          `,[order.id],(err,results) => {
+              if(err) reject(err)
+
+              order.details = results
+
+              resolve(order)
+          }
+        )
+      })
+    })
+
+    Promise.all(enrichedOrders)
+    .then(()=>{
+      return res.status(200).json(results)
+    })
+    .catch(e =>{
+      return res.status(500).json({message:"Internal Server Error",details:e})
+    })
+  })
+}
+
+module.exports = { signUp, signIn, allProducts, orderProduct, previousAndCurrentOrders }
