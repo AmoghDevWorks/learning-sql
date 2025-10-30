@@ -52,8 +52,8 @@ const getOrderFromLocation = (req, res, next) => {
       consumer.contact AS consumerPhone
     FROM orders 
     JOIN consumer ON orders.consumerId = consumer.id 
-    WHERE consumer.location = ? AND deliveryAssigned = ?
-  `, [location, -1], (err, orders) => {
+    WHERE consumer.location = ? AND deliveryAssigned IS NULL
+  `, [location], (err, orders) => {
     if (err) {
       return res.status(500).json({ message: "Internal Server Error", details: err });
     }
@@ -104,7 +104,7 @@ const takeDelivery = (req,res,next) => {
 
     if(results.length > 0) return res.status(403).json({message:"Complete your current delivery task"})
 
-    pool.query('UPDATE orders SET deliveryAssigned = ? WHERE id = ? AND deliveryAssigned = -1',[volunteerId,orderId],(err,results)=>{
+    pool.query('UPDATE orders SET deliveryAssigned = ? WHERE id = ? AND deliveryAssigned IS NULL',[volunteerId,orderId],(err,results)=>{
       if(err) return res.status(500).json({message:"Internal Server Error",details:err})
 
       if(results.affectedRows === 0) return res.status(404).json({message:"Failed to perform the operation"})
