@@ -4,7 +4,8 @@ import axios from 'axios'
 import userContext from '../utils/UserContext'
 import { useNavigate } from 'react-router-dom';
 import roleContext from '../utils/RoleContext';
-  import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { Link } from 'react-router-dom'
 
 const FarmerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -320,9 +321,9 @@ const FarmerSignUp = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <a href="#" className="text-green-600 hover:text-green-500 font-medium">
+              <Link to={'/farmerSignIn'} className="text-green-600 hover:text-green-500 font-medium">
                 Sign in here
-              </a>
+              </Link>
             </p>
           </div>
         </div>
