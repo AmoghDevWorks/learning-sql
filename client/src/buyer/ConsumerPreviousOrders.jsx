@@ -19,7 +19,7 @@ const ConsumerPreviousOrders = () => {
         content: 'Delivered',
         css: 'bg-green-50 text-green-700 border border-green-200'
         };
-    } else if (deliveryAssigned === -1) {
+    } else if (deliveryAssigned === null) {
         return {
         content: 'Pending',
         css: 'bg-yellow-50 text-yellow-700 border border-yellow-200'
